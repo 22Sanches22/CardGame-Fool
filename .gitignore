@@ -1,0 +1,10 @@
+packages/
+*.sln
+*.user
+*.csproj
+.vs*
+Properties/
+obj/
+bin/
+App*
+AssemblyInfo.cs
