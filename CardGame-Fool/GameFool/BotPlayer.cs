@@ -9,7 +9,7 @@ namespace CardGame_Fool.GameFool;
 
 internal class BotPlayer : IPlayer
 {
-    private List<Card> _cards = new(IPlayer.MaximumNumberOfCardsInHand);
+    private readonly List<Card> _cards = new(IPlayer.MaximumNumberOfCardsInHand);
 
     public BotPlayer(string playerName)
     {
@@ -26,9 +26,9 @@ internal class BotPlayer : IPlayer
 
     public void TakeСardsFromDeck(Stack<Card> cardsDeck, int numberOfCards)
     {
-        if (numberOfCards < 1
-            || numberOfCards > IPlayer.MaximumNumberOfCardsInHand
-            || numberOfCards > cardsDeck.Count)
+        if ((numberOfCards < 1)
+            || (numberOfCards > IPlayer.MaximumNumberOfCardsInHand)
+            || (numberOfCards > cardsDeck.Count))
         {
             throw new ArgumentException("The number of cards is incorrect.");
         }
