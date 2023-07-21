@@ -11,9 +11,9 @@ internal class BotPlayer : IPlayer
 {
     private readonly List<Card> _cards = new(IPlayer.MaxNumberOfCardsInHand);
 
-    public BotPlayer(string playerName)
+    public BotPlayer(string name)
     {
-        PlayerName = playerName;
+        Name = name;
     }
 
     public event EventHandlerPlayer? TakedСardsFromDeck;
@@ -21,8 +21,7 @@ internal class BotPlayer : IPlayer
     public event EventHandlerPlayer? BeatedCard;
     public event EventHandlerPlayer? TakedEnemyCards;
 
-    public string PlayerName { get; }
-
+    public string Name { get; }
     public IEnumerable<Card> Cards => _cards;
 
     public void TakeСardsFromDeck(Stack<Card> cardsDeck, int numberOfCards)

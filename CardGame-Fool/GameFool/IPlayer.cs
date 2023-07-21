@@ -15,8 +15,7 @@ internal interface IPlayer
     public event EventHandlerPlayer? BeatedCard;
     public event EventHandlerPlayer? TakedEnemyCards;
 
-    public string PlayerName { get; }
-
+    public string Name { get; }
     public IEnumerable<Card> Cards { get; }
 
     public void TakeСardsFromDeck(Stack<Card> cardsDeck, int numberOfCards);

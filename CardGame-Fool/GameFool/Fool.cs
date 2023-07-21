@@ -154,8 +154,8 @@ internal class Fool
             }
         }
 
+        return (new Random().Next(0, 2) == 0) ? player1 : player2;
 
-        return player1;
 
         void ComparisonAndSwappingCards(ref Card card1, ref Card card2)
         {
