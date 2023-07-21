@@ -9,7 +9,7 @@ namespace CardGame_Fool.GameFool;
 
 internal class BotPlayer : IPlayer
 {
-    private readonly List<Card> _cards = new(IPlayer.MaximumNumberOfCardsInHand);
+    private readonly List<Card> _cards = new(IPlayer.MaxNumberOfCardsInHand);
 
     public BotPlayer(string playerName)
     {
@@ -21,16 +21,17 @@ internal class BotPlayer : IPlayer
     public event EventHandlerPlayer? BeatedCard;
     public event EventHandlerPlayer? TakedEnemyCards;
 
-    public int NumberOfCardsInHand => _cards.Count;
-    public string PlayerName { get; }  
+    public string PlayerName { get; }
+
+    public IEnumerable<Card> Cards => _cards;
 
     public void TakeСardsFromDeck(Stack<Card> cardsDeck, int numberOfCards)
     {
         if ((numberOfCards < 1)
-            || (numberOfCards > IPlayer.MaximumNumberOfCardsInHand)
+            || (numberOfCards > IPlayer.MaxNumberOfCardsInHand)
             || (numberOfCards > cardsDeck.Count))
         {
-            throw new ArgumentException("The number of cards is incorrect.");
+            throw new ArgumentException("The indicated number of cards cannot be taken from the deck.");
         }
 
         for (var i = 0; i < numberOfCards; i++)
@@ -43,6 +44,11 @@ internal class BotPlayer : IPlayer
 
     public void MakeMove(Card cardToMove)
     {
+        if (!_cards.Contains(cardToMove))
+        {
+            throw new ArgumentException("The requested card is not in the player's hand.");
+        }
+
         _cards.Remove(cardToMove);
 
         MakeMoved?.Invoke();
@@ -50,6 +56,11 @@ internal class BotPlayer : IPlayer
 
     public void BeatCard(Card cardToBeat)
     {
+        if (!_cards.Contains(cardToBeat))
+        {
+            throw new ArgumentException("The requested card is not in the player's hand.");
+        }
+
         _cards.Remove(cardToBeat);
 
         BeatedCard?.Invoke();

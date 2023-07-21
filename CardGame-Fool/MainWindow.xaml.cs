@@ -26,8 +26,8 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
 
-        IPlayer player = new BotPlayer("user34246");
-        IPlayer player1 = new BotPlayer("user54721");
+        IPlayer player = new BotPlayer("player1");
+        IPlayer player1 = new BotPlayer("player2");
 
         Fool gameFool = new();
         gameFool.StartGame(player, player1);
@@ -38,16 +38,16 @@ public partial class MainWindow : Window
             {
                 FontSize = 11,
                 Text =
-                    (item.Meaning < Ranks.Jack
-                    ? ((int)item.Meaning).ToString()
-                    : item.Meaning.ToString())
-                    + $" {Fool.s_symbolOfSuits[item.Suit]}",
+                    (item.Rank < Ranks.Jack
+                    ? ((int)item.Rank).ToString()
+                    : item.Rank.ToString())
+                    + $" {Fool.s_symbolsOfSuits[item.Suit]}",
                 Foreground =
                     (item.Suit == Suits.Diamonds) || (item.Suit == Suits.Hearts)
                     ? Brushes.Red
                     : Brushes.Black
             };
-
+            
             Workspace.Items.Add(textBox);
         }
     }
