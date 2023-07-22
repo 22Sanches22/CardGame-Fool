@@ -9,7 +9,9 @@ namespace CardGame_Fool.GameFool;
 
 internal class BotPlayer : IPlayer
 {
-    private readonly List<Card> _cards = new(IPlayer.MaxNumberOfCardsInHand);
+    private readonly List<Card> _cards = new(IPlayer.MaxCardsCount);
+
+    private PlayerActions _choicedAction = PlayerActions.None;
 
     public BotPlayer(string name)
     {
@@ -19,21 +21,49 @@ internal class BotPlayer : IPlayer
     public event EventHandlerPlayer? TakedСardsFromDeck;
     public event EventHandlerPlayer? MakeMoved;
     public event EventHandlerPlayer? BeatedCard;
-    public event EventHandlerPlayer? TakedEnemyCards;
+    public event EventHandlerPlayer? TakedCards;
 
     public string Name { get; }
-    public IEnumerable<Card> Cards => _cards;
+    
+    public int CardsCount => _cards.Count;
 
-    public void TakeСardsFromDeck(Stack<Card> cardsDeck, int numberOfCards)
+    public void ChoiceAction(PlayerActions action)
     {
-        if ((numberOfCards < 1)
-            || (numberOfCards > IPlayer.MaxNumberOfCardsInHand)
-            || (numberOfCards > cardsDeck.Count))
+        if (action == PlayerActions.None)
         {
-            throw new ArgumentException("The indicated number of cards cannot be taken from the deck.");
+            throw new ArgumentException("It is necessary to set the action and not its absence.");
         }
 
-        for (var i = 0; i < numberOfCards; i++)
+        _choicedAction = action;
+    }
+
+    public PlayerActions WaitingСhoice()
+    {
+        while (_choicedAction == PlayerActions.None)
+            ;
+
+        PlayerActions returnedValue = _choicedAction;
+        _choicedAction = PlayerActions.None;
+
+        return returnedValue;
+    }
+
+    public IEnumerable<Card> GetCards()
+    {
+        foreach (Card card in _cards)
+        {
+            yield return card;
+        }
+    }
+
+    public void TakeСardsFromDeck(Stack<Card> cardsDeck, uint cardsCount)
+    {
+        if ((cardsCount > IPlayer.MaxCardsCount) || (cardsCount > cardsDeck.Count))
+        {
+            cardsCount = cardsDeck.Count.ToUint();
+        }
+
+        for (var i = 0; i < cardsCount; i++)
         {
             _cards.Add(cardsDeck.Pop());
         }
@@ -65,13 +95,13 @@ internal class BotPlayer : IPlayer
         BeatedCard?.Invoke();
     }
 
-    public void TakeEnemyCards(IEnumerable<Card> enemyCards)
+    public void TakeCards(IEnumerable<Card> сards)
     {
-        foreach (Card card in enemyCards)
+        foreach (Card card in сards)
         {
             _cards.Add(card);
         }
 
-        TakedEnemyCards?.Invoke();
+        TakedCards?.Invoke();
     }
 }

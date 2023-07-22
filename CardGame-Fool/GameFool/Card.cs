@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace CardGame_Fool.GameFool;
 
-internal readonly struct Card
+public readonly struct Card
 {
     public Card(Suits suit, Ranks rank)
     {
@@ -17,7 +17,7 @@ internal readonly struct Card
     public Ranks Rank { get; }
 }
 
-internal enum Suits
+public enum Suits
 {
     Spades,
     Diamonds,
@@ -25,7 +25,7 @@ internal enum Suits
     Hearts
 };
 
-internal enum Ranks
+public enum Ranks
 {
     Six = 6,
     Seven,

@@ -26,8 +26,11 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
 
-        IPlayer player = new BotPlayer("player1");
+        var player = new BotPlayer("player1");
         IPlayer player1 = new BotPlayer("player2");
+
+        //player.SAction += player.TakeEnemyCards;
+
 
         Fool gameFool = new();
         gameFool.StartGame(player, player1);
@@ -41,7 +44,7 @@ public partial class MainWindow : Window
                     (item.Rank < Ranks.Jack
                     ? ((int)item.Rank).ToString()
                     : item.Rank.ToString())
-                    + $" {Fool.s_symbolsOfSuits[item.Suit]}",
+                    + $" {Fool.s_suitSymbols[item.Suit]}",
                 Foreground =
                     (item.Suit == Suits.Diamonds) || (item.Suit == Suits.Hearts)
                     ? Brushes.Red
