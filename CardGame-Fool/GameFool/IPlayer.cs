@@ -10,10 +10,10 @@ public interface IPlayer
 {
     public const int MaxCardsCount = 6;
 
-    public event EventHandlerPlayer? TakedСardsFromDeck;
-    public event EventHandlerPlayer? MakeMoved;
-    public event EventHandlerPlayer? BeatedCard;
-    public event EventHandlerPlayer? TakedCards;
+    public event Action? TakedСardsFromDeck;
+    public event Action? MakeMoved;
+    public event Action? BeatedCard;
+    public event Action? TakedCards;
 
     public string Name { get; }
 
@@ -36,5 +36,3 @@ public enum PlayerActions
     BeatCard,
     TakeCards
 }
-
-public delegate void EventHandlerPlayer();
