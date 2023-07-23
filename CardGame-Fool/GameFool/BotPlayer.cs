@@ -37,7 +37,7 @@ internal class BotPlayer : IPlayer
         _choicedAction = action;
     }
 
-    public PlayerActions WaitingСhoice()
+    public PlayerActions WaitСhoiceAction()
     {
         while (_choicedAction == PlayerActions.None)
             ;
@@ -58,7 +58,13 @@ internal class BotPlayer : IPlayer
 
     public void TakeСardsFromDeck(Stack<Card> cardsDeck, uint cardsCount)
     {
-        if ((cardsCount > IPlayer.MaxCardsCount) || (cardsCount > cardsDeck.Count))
+        if (cardsCount > IPlayer.MaxCardsCount)
+        {
+            throw new InvalidOperationException("The count of requested cards exceeds the maximum allowed.");
+        }
+
+        // If there are not enough cards in the deck, he takes all that is.
+        if (cardsCount > cardsDeck.Count)
         {
             cardsCount = cardsDeck.Count.ToUint();
         }

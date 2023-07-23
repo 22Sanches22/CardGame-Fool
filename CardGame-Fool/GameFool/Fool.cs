@@ -9,43 +9,47 @@ using System.Xml.Linq;
 
 namespace CardGame_Fool.GameFool;
 
+/// <summary>
+/// It is a model of the card game "Fool",
+/// with the ability to launch the game process multiple times if there is 1 instance of the class.
+/// </summary>
 public class Fool
 {
     private const int s_suitsCount = 4;
     private const int s_ranksCount = 9;
     private const int s_cardsCount = s_suitsCount * s_ranksCount;
-    public static readonly Dictionary<Suits, char> s_suitSymbols = new()
-    {
-        [Suits.Spades] = '♤',
-        [Suits.Diamonds] = '♢',
-        [Suits.Clubs] = '♧',
-        [Suits.Hearts] = '♡'
-    };
 
-    public readonly Card[] _cardsDeck = new Card[s_cardsCount];
-    private Card _trumpCard;
+    private readonly IPlayer _player1;
+    private readonly IPlayer _player2;
+
+    public readonly Stack<Card> _cardsDeck;
     private readonly Dictionary<Card, int> _cardsImportance = new(s_cardsCount);
 
-    public Fool()
-    {
-        FillDeck();
+    private readonly Card _trumpCard;
 
-        CalculateCardsImportance();   
+    public Fool(IPlayer player1, IPlayer player2)
+    {
+        _player1 = player1;
+        _player2 = player2;
+
+        Card[] cardsDeck = GenerateDeck();
+        ShuffleDeck(cardsDeck);
+
+        _cardsDeck = new Stack<Card>(cardsDeck);
+
+        _trumpCard = cardsDeck[0];
+
+        CalculateCardsImportance();
     }
 
-    public IPlayer StartGame(IPlayer player1, IPlayer player2)
+    /// <summary> Starts the game and returns the winner at the end. </summary>
+    public IPlayer StartGame()
     {
-        ShuffleDeck();
+        _player1.TakeСardsFromDeck(_cardsDeck, IPlayer.MaxCardsCount);
+        _player2.TakeСardsFromDeck(_cardsDeck, IPlayer.MaxCardsCount);
 
-        _trumpCard = _cardsDeck[0];
-
-        Stack<Card> cardsDeck = new(_cardsDeck);
-
-        player1.TakeСardsFromDeck(cardsDeck, IPlayer.MaxCardsCount);
-        player2.TakeСardsFromDeck(cardsDeck, IPlayer.MaxCardsCount);
-
-        IPlayer firstPlayer = DefinitionFirstPlayer(player1, player2);
-        IPlayer secondPlayer = (firstPlayer == player1) ? player2 : player1;
+        IPlayer firstPlayer = DefinitionFirstPlayer(_player1, _player2);
+        IPlayer secondPlayer = (firstPlayer == _player1) ? _player2 : _player1;
 
         IPlayer? winner = null;
 
@@ -53,67 +57,47 @@ public class Fool
         {
             if (PlayerTurn(firstPlayer, secondPlayer))
             {
+                winner = TryGetWinner(firstPlayer, secondPlayer);
+
+                if (winner is not null)
+                {
+                    return winner;
+                }
+
                 continue;
+            }
+
+            winner = TryGetWinner(firstPlayer, secondPlayer);
+
+            if (winner is not null)
+            {
+                return winner;
             }
 
         SecondPlayerTurn:
 
             if (PlayerTurn(secondPlayer, firstPlayer))
             {
+                winner = TryGetWinner(secondPlayer, firstPlayer);
+
+                if (winner is not null)
+                {
+                    return winner;
+                }
+
                 goto SecondPlayerTurn;
             }
-        }
 
+            winner = TryGetWinner(secondPlayer, firstPlayer);
+        }
+        
         return winner;
-
-        // Returns true if player2 has taken the cards and player1 can repeat the move.
-        bool PlayerTurn(IPlayer player1, IPlayer player2)
-        {
-            player1.MakeMove();
-
-            PlayerActions waitingResult = player2.WaitingСhoice();
-
-            if (waitingResult == PlayerActions.TakeCards)
-            {
-                player2.TakeCards();
-
-                return true;
-            }
-            else if (waitingResult == PlayerActions.BeatCard)
-            {
-                player2.BeatCard();
-
-                player1.TakeСardsFromDeck(cardsDeck, (IPlayer.MaxCardsCount - player1.CardsCount).ToUint());
-                player2.TakeСardsFromDeck(cardsDeck, (IPlayer.MaxCardsCount - player2.CardsCount).ToUint());
-                
-                TryGetWinner();
-            }
-
-            return false;
-        }
-
-        void TryGetWinner()
-        {
-            if ((firstPlayer.CardsCount == 0) || (secondPlayer.CardsCount == 0))
-            {
-                if (firstPlayer.CardsCount == secondPlayer.CardsCount)
-                {
-                    winner = new BotPlayer("Draw");
-                }
-                else if (firstPlayer.CardsCount == 0)
-                {
-                    winner = player1;
-                }
-                else if (firstPlayer.CardsCount == 0)
-                {
-                    winner = player2;
-                }
-            }
-        }
     }
 
-    private void FillDeck()
+    private static Card[] GenerateDeck()
     {
+        var cardsDeck = new Card[s_cardsCount];
+
         var cardNumber = 0;
 
         for (var i = 0; i < s_suitsCount; i++)
@@ -121,12 +105,14 @@ public class Fool
             for (var j = 0; j < s_ranksCount; j++)
             {
                 // The initial rank in the "Ranks" enum is six.
-                _cardsDeck[cardNumber++] = new Card((Suits)i, j + Ranks.Six);
+                cardsDeck[cardNumber++] = new Card((Suits)i, j + Ranks.Six);
             }
         }
+
+        return cardsDeck;
     }
 
-    private void ShuffleDeck()
+    private static void ShuffleDeck(Card[] cardsDeck)
     {
         Random random = new();
 
@@ -135,12 +121,58 @@ public class Fool
             int index1 = random.Next(0, s_cardsCount);
             int index2 = random.Next(0, s_cardsCount);
 
-            (_cardsDeck[index1], _cardsDeck[index2]) = (_cardsDeck[index2], _cardsDeck[index1]);
+            (cardsDeck[index1], cardsDeck[index2]) = (cardsDeck[index2], cardsDeck[index1]);
         }
+    }
+
+    private static IPlayer? TryGetWinner(IPlayer player1, IPlayer player2)
+    {
+        if ((player1.CardsCount == 0) || (player2.CardsCount == 0))
+        {
+            if (player1.CardsCount == player2.CardsCount)
+            {
+                return new BotPlayer("Draw");
+            }
+            else if (player1.CardsCount == 0)
+            {
+                return player1;
+            }
+            else if (player2.CardsCount == 0)
+            {
+                return player2;
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary> Returns true if player2 has taken the cards and player1 can repeat the move. </summary>
+    private bool PlayerTurn(IPlayer player1, IPlayer player2)
+    {
+        player1.MakeMove();
+
+        PlayerActions waitingResult = player2.WaitСhoiceAction();
+
+        if (waitingResult == PlayerActions.TakeCards)
+        {
+            player2.TakeCards();
+
+            return true;
+        }
+
+        // If waitingResult == PlayerActions.BeatCard.
+        player2.BeatCard();
+
+        player1.TakeСardsFromDeck(_cardsDeck, (IPlayer.MaxCardsCount - player1.CardsCount).ToUint());
+        player2.TakeСardsFromDeck(_cardsDeck, (IPlayer.MaxCardsCount - player2.CardsCount).ToUint());
+
+        return false;
     }
 
     private void CalculateCardsImportance()
     {
+        _cardsImportance.Clear();
+
         foreach (Card card in _cardsDeck)
         {
             _cardsImportance.Add(card, (int)card.Rank + ((card.Suit == _trumpCard.Suit) ? 10 : 0));

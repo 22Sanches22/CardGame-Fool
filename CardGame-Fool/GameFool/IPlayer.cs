@@ -22,7 +22,7 @@ public interface IPlayer
     public int CardsCount { get; }
 
     public void ChoiceAction(PlayerActions action);
-    public PlayerActions WaitingСhoice();
+    public PlayerActions WaitСhoiceAction();
 
     public void TakeСardsFromDeck(Stack<Card> cardsDeck, uint cardsCount);
     public void MakeMove(Card cardToMove);
