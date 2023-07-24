@@ -9,10 +9,7 @@ using System.Xml.Linq;
 
 namespace CardGame_Fool.GameFool;
 
-/// <summary>
-/// It is a model of the card game "Fool",
-/// with the ability to launch the game process multiple times if there is 1 instance of the class.
-/// </summary>
+/// <summary> It is a model of the card game "Fool". </summary>
 public class Fool
 {
     private const int s_suitsCount = 4;
@@ -22,7 +19,7 @@ public class Fool
     private readonly IPlayer _player1;
     private readonly IPlayer _player2;
 
-    public readonly Stack<Card> _cardsDeck;
+    private readonly Stack<Card> _cardsDeck;
     private readonly Dictionary<Card, int> _cardsImportance = new(s_cardsCount);
 
     private readonly Card _trumpCard;
@@ -42,8 +39,8 @@ public class Fool
         CalculateCardsImportance();
     }
 
-    /// <summary> Starts the game and returns the winner at the end. </summary>
-    public IPlayer StartGame()
+    /// <returns> Winner or draw. </returns>
+    public GameResults StartGame()
     {
         _player1.TakeСardsFromDeck(_cardsDeck, IPlayer.MaxCardsCount);
         _player2.TakeСardsFromDeck(_cardsDeck, IPlayer.MaxCardsCount);
@@ -51,47 +48,37 @@ public class Fool
         IPlayer firstPlayer = DefinitionFirstPlayer(_player1, _player2);
         IPlayer secondPlayer = (firstPlayer == _player1) ? _player2 : _player1;
 
-        IPlayer? winner = null;
+        GameResults? gameResult = null;
 
-        while (winner is null)
+        while (gameResult is null)
         {
-            if (PlayerTurn(firstPlayer, secondPlayer))
-            {
-                winner = TryGetWinner(firstPlayer, secondPlayer);
+            firstPlayer.MakeMove();
 
-                if (winner is not null)
-                {
-                    return winner;
-                }
+            PlayerActions waitingResult = secondPlayer.WaitСhoiceAction();
+            
+            if (waitingResult == PlayerActions.TakeCards)
+            {
+                secondPlayer.TakeCards();
+
+                gameResult = TryGetGameResult(firstPlayer, secondPlayer);
 
                 continue;
             }
 
-            winner = TryGetWinner(firstPlayer, secondPlayer);
+            // If waitingResult == PlayerActions.BeatCard.
 
-            if (winner is not null)
-            {
-                return winner;
-            }
+            secondPlayer.BeatCard();
 
-        SecondPlayerTurn:
+            gameResult = TryGetGameResult(firstPlayer, secondPlayer);
 
-            if (PlayerTurn(secondPlayer, firstPlayer))
-            {
-                winner = TryGetWinner(secondPlayer, firstPlayer);
+            // Exchange of roles, now the one who made the move beat сards.
+            (firstPlayer, secondPlayer) = (secondPlayer, firstPlayer);
 
-                if (winner is not null)
-                {
-                    return winner;
-                }
-
-                goto SecondPlayerTurn;
-            }
-
-            winner = TryGetWinner(secondPlayer, firstPlayer);
+            _player1.TakeСardsFromDeck(_cardsDeck, (IPlayer.MaxCardsCount - _player1.CardsCount).ToUint());
+            _player2.TakeСardsFromDeck(_cardsDeck, (IPlayer.MaxCardsCount - _player2.CardsCount).ToUint());
         }
-        
-        return winner;
+
+        return (GameResults)gameResult;
     }
 
     private static Card[] GenerateDeck()
@@ -125,60 +112,37 @@ public class Fool
         }
     }
 
-    private static IPlayer? TryGetWinner(IPlayer player1, IPlayer player2)
+    /// <returns> Draw if both players have no cards or winner if there is one, otherwise null. </returns>
+    private static GameResults? TryGetGameResult(IPlayer player1, IPlayer player2)
     {
         if ((player1.CardsCount == 0) || (player2.CardsCount == 0))
         {
             if (player1.CardsCount == player2.CardsCount)
             {
-                return new BotPlayer("Draw");
+                return GameResults.Draw;
             }
             else if (player1.CardsCount == 0)
             {
-                return player1;
+                return GameResults.WinnerPlayer1;
             }
             else if (player2.CardsCount == 0)
             {
-                return player2;
+                return GameResults.WinnerPlayer2;
             }
         }
 
         return null;
     }
 
-    /// <summary> Returns true if player2 has taken the cards and player1 can repeat the move. </summary>
-    private bool PlayerTurn(IPlayer player1, IPlayer player2)
-    {
-        player1.MakeMove();
-
-        PlayerActions waitingResult = player2.WaitСhoiceAction();
-
-        if (waitingResult == PlayerActions.TakeCards)
-        {
-            player2.TakeCards();
-
-            return true;
-        }
-
-        // If waitingResult == PlayerActions.BeatCard.
-        player2.BeatCard();
-
-        player1.TakeСardsFromDeck(_cardsDeck, (IPlayer.MaxCardsCount - player1.CardsCount).ToUint());
-        player2.TakeСardsFromDeck(_cardsDeck, (IPlayer.MaxCardsCount - player2.CardsCount).ToUint());
-
-        return false;
-    }
-
     private void CalculateCardsImportance()
     {
-        _cardsImportance.Clear();
-
         foreach (Card card in _cardsDeck)
         {
             _cardsImportance.Add(card, (int)card.Rank + ((card.Suit == _trumpCard.Suit) ? 10 : 0));
         }
     }
 
+    /// <returns> The player make move first. </returns>
     private IPlayer DefinitionFirstPlayer(IPlayer player1, IPlayer player2)
     {
         Card[] playerCards1 = player1.GetCards().ToArray();
@@ -243,6 +207,7 @@ public class Fool
             }
         }
 
+        // Returns the winner of the comparison, if any.
         IPlayer? ComparePlayersCards(Card[] collection1, Card[] collection2)
         {
             for (var i = 0; i < Math.Min(collection1.Length, collection2.Length); i++)
@@ -260,4 +225,11 @@ public class Fool
             return null;
         }
     }
+}
+
+public enum GameResults
+{
+    WinnerPlayer1,
+    WinnerPlayer2,
+    Draw
 }

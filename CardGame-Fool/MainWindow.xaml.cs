@@ -26,10 +26,6 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
 
-        BotPlayer player = new("player1");
-        BotPlayer player1 = new("player2");
-
-
         Dictionary<Suits, char> suitSymbols = new()
         {
             [Suits.Spades] = '♤',
@@ -38,26 +34,29 @@ public partial class MainWindow : Window
             [Suits.Hearts] = '♡'
         };
 
-        Fool gameFool = new(player, player1);
-        gameFool.StartGame();
+        BotPlayer player = new("player1");
+        BotPlayer player1 = new("player2");
 
-        foreach (Card item in gameFool._cardsDeck)
-        {
-            var textBox = new TextBlock
-            {
-                FontSize = 11,
-                Text =
-                    (item.Rank < Ranks.Jack
-                    ? ((int)item.Rank).ToString()
-                    : item.Rank.ToString())
-                    + $" {suitSymbols[item.Suit]}",
-                Foreground =
-                    (item.Suit == Suits.Diamonds) || (item.Suit == Suits.Hearts)
-                    ? Brushes.Red
-                    : Brushes.Black
-            };
+        Fool gameFool = new(player, player1);
+        //gameFool.StartGame();
+
+        //foreach (Card item in gameFool._cardsDeck)
+        //{
+        //    var textBox = new TextBlock
+        //    {
+        //        FontSize = 11,
+        //        Text =
+        //            (item.Rank < Ranks.Jack
+        //            ? ((int)item.Rank).ToString()
+        //            : item.Rank.ToString())
+        //            + $" {suitSymbols[item.Suit]}",
+        //        Foreground =
+        //            (item.Suit == Suits.Diamonds) || (item.Suit == Suits.Hearts)
+        //            ? Brushes.Red
+        //            : Brushes.Black
+        //    };
             
-            Workspace.Items.Add(textBox);
-        }
+        //    Workspace.Items.Add(textBox);
+        //}
     }
 }

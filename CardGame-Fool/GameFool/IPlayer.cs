@@ -17,9 +17,8 @@ public interface IPlayer
 
     public string Name { get; }
 
-    public IEnumerable<Card> GetCards();
-    
     public int CardsCount { get; }
+    public IEnumerable<Card> GetCards();
 
     public void ChoiceAction(PlayerActions action);
     public PlayerActions WaitСhoiceAction();

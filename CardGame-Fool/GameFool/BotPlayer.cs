@@ -27,6 +27,14 @@ internal class BotPlayer : IPlayer
     
     public int CardsCount => _cards.Count;
 
+    public IEnumerable<Card> GetCards()
+    {
+        foreach (Card card in _cards)
+        {
+            yield return card;
+        }
+    }
+
     public void ChoiceAction(PlayerActions action)
     {
         if (action == PlayerActions.None)
@@ -46,14 +54,6 @@ internal class BotPlayer : IPlayer
         _choicedAction = PlayerActions.None;
 
         return returnedValue;
-    }
-
-    public IEnumerable<Card> GetCards()
-    {
-        foreach (Card card in _cards)
-        {
-            yield return card;
-        }
     }
 
     public void TakeСardsFromDeck(Stack<Card> cardsDeck, uint cardsCount)
