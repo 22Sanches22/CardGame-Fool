@@ -10,7 +10,8 @@ public readonly struct Card
 {
     public Card(Suits suit, Ranks rank)
     {
-        (Suit, Rank) = (suit, rank);
+        Suit = suit;
+        Rank = rank;
     }
 
     public Suits Suit { get; }

@@ -20,18 +20,23 @@ public interface IPlayer
     public int CardsCount { get; }
     public IEnumerable<Card> GetCards();
 
-    public void ChoiceAction(PlayerActions action);
+    public void SetAction(PlayerActions action);
     public PlayerActions WaitСhoiceAction();
 
     public void TakeСardsFromDeck(Stack<Card> cardsDeck, uint cardsCount);
     public void MakeMove(Card cardToMove);
     public void BeatCard(Card cardToBeat);
     public void TakeCards(IEnumerable<Card> сards);
+
+    public Card WaitCardChoiceToMakeMove();
+    public Card WaitCardChoiceToBeatCard();
 }
 
 public enum PlayerActions
 {
     None,
+    MakeMove,
     BeatCard,
     TakeCards
+    //GiveCards
 }

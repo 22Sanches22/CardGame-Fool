@@ -1,9 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CardGame_Fool.GameFool;
 
@@ -35,7 +31,7 @@ internal class BotPlayer : IPlayer
         }
     }
 
-    public void ChoiceAction(PlayerActions action)
+    public void SetAction(PlayerActions action)
     {
         if (action == PlayerActions.None)
         {
@@ -55,7 +51,7 @@ internal class BotPlayer : IPlayer
 
         return returnedValue;
     }
-
+    
     public void TakeСardsFromDeck(Stack<Card> cardsDeck, uint cardsCount)
     {
         if (cardsCount > IPlayer.MaxCardsCount)
@@ -109,5 +105,15 @@ internal class BotPlayer : IPlayer
         }
 
         TakedCards?.Invoke();
+    }
+
+    public Card WaitCardChoiceToMakeMove()
+    {
+
+    }
+
+    public Card WaitCardChoiceToBeatCard()
+    {
+        
     }
 }

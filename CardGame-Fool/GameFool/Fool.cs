@@ -49,16 +49,33 @@ public class Fool
         IPlayer secondPlayer = (firstPlayer == _player1) ? _player2 : _player1;
 
         GameResults? gameResult = null;
+        
+        List<Card> cardsOnTable = new(IPlayer.MaxCardsCount * 2);
 
         while (gameResult is null)
         {
-            firstPlayer.MakeMove();
+            Card cardToMakeMove = firstPlayer.WaitCardChoiceToMakeMove();
+            firstPlayer.MakeMove(cardToMakeMove);
 
-            PlayerActions waitingResult = secondPlayer.WaitСhoiceAction();
+            cardsOnTable.Add(cardToMakeMove);
+
+            PlayerActions chosenActionSecondPlayer = secondPlayer.WaitСhoiceAction();
             
-            if (waitingResult == PlayerActions.TakeCards)
+            if (chosenActionSecondPlayer == PlayerActions.TakeCards)
             {
-                secondPlayer.TakeCards();
+                secondPlayer.TakeCards(cardsOnTable);
+
+                PlayerActions chosenActionFirstPlayer = firstPlayer.WaitСhoiceAction();
+
+                while (chosenActionFirstPlayer == PlayerActions.MakeMove)
+                {
+                    cardToMakeMove = firstPlayer.WaitCardChoiceToMakeMove();
+                    firstPlayer.MakeMove(cardToMakeMove);
+
+                    cardsOnTable.Add(cardToMakeMove);
+
+                    chosenActionFirstPlayer = firstPlayer.WaitСhoiceAction();
+                }
 
                 gameResult = TryGetGameResult(firstPlayer, secondPlayer);
 
@@ -67,7 +84,10 @@ public class Fool
 
             // If waitingResult == PlayerActions.BeatCard.
 
-            secondPlayer.BeatCard();
+            Card cardToBeatCard = secondPlayer.WaitCardChoiceToBeatCard();
+            secondPlayer.BeatCard(cardToBeatCard);
+
+            cardsOnTable.Clear();
 
             gameResult = TryGetGameResult(firstPlayer, secondPlayer);
 
