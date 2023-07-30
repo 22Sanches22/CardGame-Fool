@@ -6,6 +6,6 @@
         xmlns:local="clr-namespace:CardGame_Fool"
         mc:Ignorable="d"
         Title="MainWindow" SizeToContent="WidthAndHeight">
-    <ListBox x:Name="Workspace" Width="800" Height="450"/>
+    <Grid x:Name="Workspace" Width="800" Height="450"/>
 
 </Window>

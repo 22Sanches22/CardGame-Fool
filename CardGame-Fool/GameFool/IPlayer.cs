@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,13 +18,13 @@ public interface IPlayer
 
     public string Name { get; }
 
+    public ReadOnlyCollection<Card> Cards { get; }
     public int CardsCount { get; }
-    public IEnumerable<Card> GetCards();
 
     public void SetAction(PlayerActions action);
     public PlayerActions WaitСhoiceAction();
 
-    public void TakeСardsFromDeck(Stack<Card> cardsDeck, uint cardsCount);
+    public void TakeСardsFromDeck(Deck cardsDeck, int cardsCount);
     public void MakeMove(Card cardToMove);
     public void BeatCard(Card cardToBeat);
     public void TakeCards(IEnumerable<Card> сards);
@@ -34,9 +35,7 @@ public interface IPlayer
 
 public enum PlayerActions
 {
-    None,
     MakeMove,
     BeatCard,
     TakeCards
-    //GiveCards
 }

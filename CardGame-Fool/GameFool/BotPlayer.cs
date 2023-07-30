@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Collections.ObjectModel;
 
 namespace CardGame_Fool.GameFool;
 
@@ -7,7 +9,7 @@ internal class BotPlayer : IPlayer
 {
     private readonly List<Card> _cards = new(IPlayer.MaxCardsCount);
 
-    private PlayerActions _choicedAction = PlayerActions.None;
+    private PlayerActions? _choicedAction = null;
 
     public BotPlayer(string name)
     {
@@ -20,54 +22,43 @@ internal class BotPlayer : IPlayer
     public event Action? TakedCards;
 
     public string Name { get; }
-    
+
+    public ReadOnlyCollection<Card> Cards => new(_cards);
     public int CardsCount => _cards.Count;
-
-    public IEnumerable<Card> GetCards()
-    {
-        foreach (Card card in _cards)
-        {
-            yield return card;
-        }
-    }
-
+    
     public void SetAction(PlayerActions action)
     {
-        if (action == PlayerActions.None)
-        {
-            throw new ArgumentException("It is necessary to set the action and not its absence.");
-        }
-
         _choicedAction = action;
     }
 
     public PlayerActions WaitСhoiceAction()
     {
-        while (_choicedAction == PlayerActions.None)
+        while (_choicedAction is null)
             ;
 
-        PlayerActions returnedValue = _choicedAction;
-        _choicedAction = PlayerActions.None;
+        PlayerActions returnedValue = (PlayerActions)_choicedAction;
+        _choicedAction = null;
 
         return returnedValue;
     }
     
-    public void TakeСardsFromDeck(Stack<Card> cardsDeck, uint cardsCount)
+    public void TakeСardsFromDeck(Deck cardsDeck, int cardsCount)
     {
-        if (cardsCount > IPlayer.MaxCardsCount)
+        if ((cardsCount < 0) || (cardsCount > IPlayer.MaxCardsCount))
         {
-            throw new InvalidOperationException("The count of requested cards exceeds the maximum allowed.");
+            throw new InvalidOperationException("The number of cards requested is less than zero " +
+                "or greater than the maximum allowed.");
         }
 
         // If there are not enough cards in the deck, he takes all that is.
-        if (cardsCount > cardsDeck.Count)
+        if (cardsCount > cardsDeck.CardsCount)
         {
-            cardsCount = cardsDeck.Count.ToUint();
+            cardsCount = cardsDeck.CardsCount;
         }
-
+        
         for (var i = 0; i < cardsCount; i++)
         {
-            _cards.Add(cardsDeck.Pop());
+            _cards.Add(cardsDeck.GetTopCard());
         }
 
         TakedСardsFromDeck?.Invoke();
@@ -99,10 +90,7 @@ internal class BotPlayer : IPlayer
 
     public void TakeCards(IEnumerable<Card> сards)
     {
-        foreach (Card card in сards)
-        {
-            _cards.Add(card);
-        }
+        _cards.AddRange(_cards);
 
         TakedCards?.Invoke();
     }

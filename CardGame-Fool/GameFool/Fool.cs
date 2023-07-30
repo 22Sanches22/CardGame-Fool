@@ -1,42 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
-using System.Numerics;
-using System.Security.Policy;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace CardGame_Fool.GameFool;
 
 /// <summary> It is a model of the card game "Fool". </summary>
 public class Fool
 {
-    private const int s_suitsCount = 4;
-    private const int s_ranksCount = 9;
-    private const int s_cardsCount = s_suitsCount * s_ranksCount;
-
     private readonly IPlayer _player1;
     private readonly IPlayer _player2;
 
-    private readonly Stack<Card> _cardsDeck;
-    private readonly Dictionary<Card, int> _cardsImportance = new(s_cardsCount);
-
-    private readonly Card _trumpCard;
+    private readonly Deck _cardsDeck = new();
 
     public Fool(IPlayer player1, IPlayer player2)
     {
         _player1 = player1;
         _player2 = player2;
-
-        Card[] cardsDeck = GenerateDeck();
-        ShuffleDeck(cardsDeck);
-
-        _cardsDeck = new Stack<Card>(cardsDeck);
-
-        _trumpCard = cardsDeck[0];
-
-        CalculateCardsImportance();
     }
 
     /// <returns> Winner or draw. </returns>
@@ -45,7 +25,7 @@ public class Fool
         _player1.TakeСardsFromDeck(_cardsDeck, IPlayer.MaxCardsCount);
         _player2.TakeСardsFromDeck(_cardsDeck, IPlayer.MaxCardsCount);
 
-        IPlayer firstPlayer = DefinitionFirstPlayer(_player1, _player2);
+        IPlayer firstPlayer = IdentifyFirstPlayer(_player1, _player2);
         IPlayer secondPlayer = (firstPlayer == _player1) ? _player2 : _player1;
 
         GameResults? gameResult = null;
@@ -54,10 +34,10 @@ public class Fool
 
         while (gameResult is null)
         {
-            Card cardToMakeMove = firstPlayer.WaitCardChoiceToMakeMove();
-            firstPlayer.MakeMove(cardToMakeMove);
+            Card cardToMakeMoveFirstPlayer = firstPlayer.WaitCardChoiceToMakeMove();
+            firstPlayer.MakeMove(cardToMakeMoveFirstPlayer);
 
-            cardsOnTable.Add(cardToMakeMove);
+            cardsOnTable.Add(cardToMakeMoveFirstPlayer);
 
             PlayerActions chosenActionSecondPlayer = secondPlayer.WaitСhoiceAction();
             
@@ -69,10 +49,10 @@ public class Fool
 
                 while (chosenActionFirstPlayer == PlayerActions.MakeMove)
                 {
-                    cardToMakeMove = firstPlayer.WaitCardChoiceToMakeMove();
-                    firstPlayer.MakeMove(cardToMakeMove);
-
-                    cardsOnTable.Add(cardToMakeMove);
+                    cardToMakeMoveFirstPlayer = firstPlayer.WaitCardChoiceToMakeMove();
+                    firstPlayer.MakeMove(cardToMakeMoveFirstPlayer);
+                      
+                    cardsOnTable.Add(cardToMakeMoveFirstPlayer);
 
                     chosenActionFirstPlayer = firstPlayer.WaitСhoiceAction();
                 }
@@ -84,8 +64,8 @@ public class Fool
 
             // If waitingResult == PlayerActions.BeatCard.
 
-            Card cardToBeatCard = secondPlayer.WaitCardChoiceToBeatCard();
-            secondPlayer.BeatCard(cardToBeatCard);
+            Card cardSecondPlayerToBeatCard = secondPlayer.WaitCardChoiceToBeatCard();
+            secondPlayer.BeatCard(cardSecondPlayerToBeatCard);
 
             cardsOnTable.Clear();
 
@@ -94,41 +74,19 @@ public class Fool
             // Exchange of roles, now the one who made the move beat сards.
             (firstPlayer, secondPlayer) = (secondPlayer, firstPlayer);
 
-            _player1.TakeСardsFromDeck(_cardsDeck, (IPlayer.MaxCardsCount - _player1.CardsCount).ToUint());
-            _player2.TakeСardsFromDeck(_cardsDeck, (IPlayer.MaxCardsCount - _player2.CardsCount).ToUint());
+            ReplenishCards(_player1);
+            ReplenishCards(_player2);
         }
 
         return (GameResults)gameResult;
-    }
 
-    private static Card[] GenerateDeck()
-    {
-        var cardsDeck = new Card[s_cardsCount];
 
-        var cardNumber = 0;
-
-        for (var i = 0; i < s_suitsCount; i++)
+        void ReplenishCards(IPlayer player)
         {
-            for (var j = 0; j < s_ranksCount; j++)
+            if ((player.CardsCount > 0) && (player.CardsCount < IPlayer.MaxCardsCount))
             {
-                // The initial rank in the "Ranks" enum is six.
-                cardsDeck[cardNumber++] = new Card((Suits)i, j + Ranks.Six);
+                player.TakeСardsFromDeck(_cardsDeck, IPlayer.MaxCardsCount - player.CardsCount);
             }
-        }
-
-        return cardsDeck;
-    }
-
-    private static void ShuffleDeck(Card[] cardsDeck)
-    {
-        Random random = new();
-
-        for (var i = 0; i < s_cardsCount; i++)
-        {
-            int index1 = random.Next(0, s_cardsCount);
-            int index2 = random.Next(0, s_cardsCount);
-
-            (cardsDeck[index1], cardsDeck[index2]) = (cardsDeck[index2], cardsDeck[index1]);
         }
     }
 
@@ -154,95 +112,85 @@ public class Fool
         return null;
     }
 
-    private void CalculateCardsImportance()
-    {
-        foreach (Card card in _cardsDeck)
-        {
-            _cardsImportance.Add(card, (int)card.Rank + ((card.Suit == _trumpCard.Suit) ? 10 : 0));
-        }
-    }
-
     /// <returns> The player make move first. </returns>
-    private IPlayer DefinitionFirstPlayer(IPlayer player1, IPlayer player2)
+    private IPlayer IdentifyFirstPlayer(IPlayer player1, IPlayer player2)
     {
-        Card[] playerCards1 = player1.GetCards().ToArray();
-        Card[] playerCards2 = player2.GetCards().ToArray();
+        Card[] player1Cards = SortPlayerCards(player1.Cards);
+        Card[] player2Cards = SortPlayerCards(player2.Cards);
 
-        for (var i = 0; i < IPlayer.MaxCardsCount; i++)
+        Card[] player1Trumps = SearchTrumpCardsPlayer(player1Cards);
+        Card[] player2Trumps = SearchTrumpCardsPlayer(player2Cards);
+
+
+        if ((player1Trumps.Length + player2Trumps.Length) > 0)
         {
-            for (var j = 0; j < IPlayer.MaxCardsCount - 1; j++)
+            if (player1Trumps.Length == 0)
             {
-                CompareAndSwappingCards(ref playerCards1[j], ref playerCards1[j + 1]);
-                CompareAndSwappingCards(ref playerCards2[j], ref playerCards2[j + 1]);
+                return player2;
             }
-        }
-
-
-        List<Card> playerTrumps1 = new();
-        List<Card> playerTrumps2 = new();
-
-        // Search trump cards in players.
-        for (var i = 0; i < IPlayer.MaxCardsCount; i++)
-        {
-            if (playerCards1[i].Suit == _trumpCard.Suit)
+            else if (player2Trumps.Length == 0)
             {
-                playerTrumps1.Add(playerCards1[i]);
+                return player1;
             }
 
-            if (playerCards2[i].Suit == _trumpCard.Suit)
+            return (_cardsDeck.CardsImportance[player1Trumps[0]] < _cardsDeck.CardsImportance[player2Trumps[0]]
+                ? player1
+                : player2);
+        }
+
+        return ComparePlayersCards(player1Cards, player2Cards);
+
+
+        Card[] SortPlayerCards(ReadOnlyCollection<Card> playerCards)
+        {
+            Card[] cards = playerCards.ToArray();
+
+            for (int i = 0; i < cards.Length; i++)
             {
-                playerTrumps2.Add(playerCards2[i]);
+                for (int j = 0; j < cards.Length - 1; j++)
+                {
+                    if (_cardsDeck.CardsImportance[cards[j]] > _cardsDeck.CardsImportance[cards[j + 1]])
+                    {
+                        (cards[j], cards[j + 1]) = (cards[j + 1], cards[j]);
+                    }
+                }
             }
+
+            return cards;
         }
 
-        if ((playerTrumps1.Count + playerTrumps2.Count) > 0)
+        Card[] SearchTrumpCardsPlayer(Card[] cards)
         {
-            IPlayer? trumpsCardComparisonResult =
-                ComparePlayersCards(playerTrumps1.ToArray(), playerTrumps2.ToArray());
+            List<Card> trumpCards = new();
 
-            if (trumpsCardComparisonResult is not null)
+            foreach (Card card in cards)
             {
-                return trumpsCardComparisonResult;
+                if (card.Suit == _cardsDeck.TrumpSuit)
+                {
+                    trumpCards.Add(card);
+                }
             }
 
-            return playerTrumps1.Count > playerTrumps2.Count ? player1 : player2;
+            return trumpCards.ToArray();
         }
 
-
-        IPlayer? allCardComparisonResult = ComparePlayersCards(playerCards1, playerCards2);
-
-        if (allCardComparisonResult is not null)
+        // Returns the player based on the results of the comparison.
+        IPlayer ComparePlayersCards(Card[] cards1, Card[] cards2)
         {
-            return allCardComparisonResult;
-        }
-
-        return (new Random().Next(0, 2) == 0) ? player1 : player2;
-
-
-        void CompareAndSwappingCards(ref Card card1, ref Card card2)
-        {
-            if (_cardsImportance[card1] > _cardsImportance[card2])
+            for (int i = 0; i < Math.Min(cards1.Length, cards2.Length); i++)
             {
-                (card1, card2) = (card2, card1);
-            }
-        }
-
-        // Returns the winner of the comparison, if any.
-        IPlayer? ComparePlayersCards(Card[] collection1, Card[] collection2)
-        {
-            for (var i = 0; i < Math.Min(collection1.Length, collection2.Length); i++)
-            {
-                if (_cardsImportance[collection1[i]] < _cardsImportance[collection2[i]])
+                if (_cardsDeck.CardsImportance[cards1[i]] < _cardsDeck.CardsImportance[cards2[i]])
                 {
                     return player1;
                 }
-                else if (_cardsImportance[collection1[i]] > _cardsImportance[collection2[i]])
+                else if (_cardsDeck.CardsImportance[cards1[i]] > _cardsDeck.CardsImportance[cards2[i]])
                 {
                     return player2;
                 }
             }
 
-            return null;
+            // Unreachable but necessary code.
+            return player1;
         }
     }
 }

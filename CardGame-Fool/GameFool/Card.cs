@@ -1,21 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace CardGame_Fool.GameFool;
 
 public readonly struct Card
 {
+    public readonly Suits Suit;
+    public readonly Ranks Rank;
+
     public Card(Suits suit, Ranks rank)
     {
         Suit = suit;
-        Rank = rank;
+        Rank = rank;    
     }
-
-    public Suits Suit { get; }
-    public Ranks Rank { get; }
 }
 
 public enum Suits
