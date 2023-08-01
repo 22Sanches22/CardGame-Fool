@@ -25,7 +25,7 @@ public class Fool
         _player1.TakeСardsFromDeck(_cardsDeck, IPlayer.MaxCardsCount);
         _player2.TakeСardsFromDeck(_cardsDeck, IPlayer.MaxCardsCount);
 
-        IPlayer firstPlayer = IdentifyFirstPlayer(_player1, _player2);
+        IPlayer firstPlayer = IdentifyFirstPlayer();
         IPlayer secondPlayer = (firstPlayer == _player1) ? _player2 : _player1;
 
         GameResults? gameResult = null;
@@ -34,10 +34,7 @@ public class Fool
 
         while (gameResult is null)
         {
-            Card cardToMakeMoveFirstPlayer = firstPlayer.WaitCardChoiceToMakeMove();
-            firstPlayer.MakeMove(cardToMakeMoveFirstPlayer);
-
-            cardsOnTable.Add(cardToMakeMoveFirstPlayer);
+            FirstPlayerMove();
 
             PlayerActions chosenActionSecondPlayer = secondPlayer.WaitСhoiceAction();
             
@@ -49,10 +46,7 @@ public class Fool
 
                 while (chosenActionFirstPlayer == PlayerActions.MakeMove)
                 {
-                    cardToMakeMoveFirstPlayer = firstPlayer.WaitCardChoiceToMakeMove();
-                    firstPlayer.MakeMove(cardToMakeMoveFirstPlayer);
-                      
-                    cardsOnTable.Add(cardToMakeMoveFirstPlayer);
+                    FirstPlayerMove();
 
                     chosenActionFirstPlayer = firstPlayer.WaitСhoiceAction();
                 }
@@ -61,8 +55,6 @@ public class Fool
 
                 continue;
             }
-
-            // If waitingResult == PlayerActions.BeatCard.
 
             Card cardSecondPlayerToBeatCard = secondPlayer.WaitCardChoiceToBeatCard();
             secondPlayer.BeatCard(cardSecondPlayerToBeatCard);
@@ -80,6 +72,14 @@ public class Fool
 
         return (GameResults)gameResult;
 
+        
+        void FirstPlayerMove()
+        {
+            Card cardToMakeMoveFirstPlayer = firstPlayer.WaitCardChoiceToMakeMove();
+            firstPlayer.MakeMove(cardToMakeMoveFirstPlayer);
+
+            cardsOnTable.Add(cardToMakeMoveFirstPlayer);
+        }
 
         void ReplenishCards(IPlayer player)
         {
@@ -113,84 +113,63 @@ public class Fool
     }
 
     /// <returns> The player make move first. </returns>
-    private IPlayer IdentifyFirstPlayer(IPlayer player1, IPlayer player2)
+    private IPlayer IdentifyFirstPlayer()
     {
-        Card[] player1Cards = SortPlayerCards(player1.Cards);
-        Card[] player2Cards = SortPlayerCards(player2.Cards);
+        IPlayer? trumpsCompareResult = ComparePlayersTrumps();
 
-        Card[] player1Trumps = SearchTrumpCardsPlayer(player1Cards);
-        Card[] player2Trumps = SearchTrumpCardsPlayer(player2Cards);
-
-
-        if ((player1Trumps.Length + player2Trumps.Length) > 0)
+        if (trumpsCompareResult is not null)
         {
-            if (player1Trumps.Length == 0)
-            {
-                return player2;
-            }
-            else if (player2Trumps.Length == 0)
-            {
-                return player1;
-            }
-
-            return (_cardsDeck.CardsImportance[player1Trumps[0]] < _cardsDeck.CardsImportance[player2Trumps[0]]
-                ? player1
-                : player2);
+            return trumpsCompareResult;
         }
 
-        return ComparePlayersCards(player1Cards, player2Cards);
+        return ComparePlayersAllCards(_player1, _player2);
+        
 
-
-        Card[] SortPlayerCards(ReadOnlyCollection<Card> playerCards)
+        IPlayer? ComparePlayersTrumps()
         {
-            Card[] cards = playerCards.ToArray();
+            Card[] player1Trumps = _player1.GetTrumpCards(_cardsDeck.TrumpSuit);
+            Card[] player2Trumps = _player2.GetTrumpCards(_cardsDeck.TrumpSuit);
 
-            for (int i = 0; i < cards.Length; i++)
+            if ((player1Trumps.Length + player2Trumps.Length) > 0)
             {
-                for (int j = 0; j < cards.Length - 1; j++)
+                if (player1Trumps.Length == 0)
                 {
-                    if (_cardsDeck.CardsImportance[cards[j]] > _cardsDeck.CardsImportance[cards[j + 1]])
-                    {
-                        (cards[j], cards[j + 1]) = (cards[j + 1], cards[j]);
-                    }
+                    return _player2;
                 }
+                else if (player2Trumps.Length == 0)
+                {
+                    return _player1;
+                }
+
+                return _cardsDeck.CardsImportance[player1Trumps[0]] < _cardsDeck.CardsImportance[player2Trumps[0]]
+                       ? _player1
+                       : _player2;
             }
 
-            return cards;
-        }
-
-        Card[] SearchTrumpCardsPlayer(Card[] cards)
-        {
-            List<Card> trumpCards = new();
-
-            foreach (Card card in cards)
-            {
-                if (card.Suit == _cardsDeck.TrumpSuit)
-                {
-                    trumpCards.Add(card);
-                }
-            }
-
-            return trumpCards.ToArray();
+            return null;
         }
 
         // Returns the player based on the results of the comparison.
-        IPlayer ComparePlayersCards(Card[] cards1, Card[] cards2)
+        IPlayer ComparePlayersAllCards(IPlayer player1, IPlayer player2)
         {
-            for (int i = 0; i < Math.Min(cards1.Length, cards2.Length); i++)
+            Card[] sortedPlayer1Cards = _cardsDeck.SortCardsCollection(player1.Cards);
+            Card[] sortedPlayer2Cards = _cardsDeck.SortCardsCollection(player2.Cards);
+
+            for (int i = 0; i < Math.Min(sortedPlayer1Cards.Length, sortedPlayer2Cards.Length); i++)
             {
-                if (_cardsDeck.CardsImportance[cards1[i]] < _cardsDeck.CardsImportance[cards2[i]])
+                if (_cardsDeck.CardsImportance[sortedPlayer1Cards[i]]
+                    < _cardsDeck.CardsImportance[sortedPlayer2Cards[i]])
                 {
                     return player1;
                 }
-                else if (_cardsDeck.CardsImportance[cards1[i]] > _cardsDeck.CardsImportance[cards2[i]])
+                else if (_cardsDeck.CardsImportance[sortedPlayer1Cards[i]]
+                    > _cardsDeck.CardsImportance[sortedPlayer2Cards[i]])
                 {
                     return player2;
                 }
             }
 
-            // Unreachable but necessary code.
-            return player1;
+            return new Random().Next(2) == 0 ? player1: player2;
         }
     }
 }

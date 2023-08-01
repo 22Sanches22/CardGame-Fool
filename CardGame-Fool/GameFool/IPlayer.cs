@@ -18,8 +18,10 @@ public interface IPlayer
 
     public string Name { get; }
 
-    public ReadOnlyCollection<Card> Cards { get; }
+    public Card[] Cards { get; }
     public int CardsCount { get; }
+
+    public Card[] GetTrumpCards(Suits trumpSuit);
 
     public void SetAction(PlayerActions action);
     public PlayerActions WaitСhoiceAction();

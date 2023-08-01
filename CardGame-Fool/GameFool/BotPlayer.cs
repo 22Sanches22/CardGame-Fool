@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace CardGame_Fool.GameFool;
 
@@ -23,9 +23,14 @@ internal class BotPlayer : IPlayer
 
     public string Name { get; }
 
-    public ReadOnlyCollection<Card> Cards => new(_cards);
+    public Card[] Cards => _cards.ToArray();
     public int CardsCount => _cards.Count;
     
+    public Card[] GetTrumpCards(Suits trumpSuit)
+    {
+        return _cards.Where(card => card.Suit == trumpSuit).ToArray();
+    }
+
     public void SetAction(PlayerActions action)
     {
         _choicedAction = action;

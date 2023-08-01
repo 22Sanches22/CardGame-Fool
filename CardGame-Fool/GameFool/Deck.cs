@@ -34,6 +34,24 @@ namespace CardGame_Fool.GameFool
         public ReadOnlyDictionary<Card, int> CardsImportance => new(_cardsImportance);
 
         public int CardsCount => _cards.Count;
+        
+        public Card[] SortCardsCollection(ICollection<Card> playerCards)
+        {
+            Card[] cards = playerCards.ToArray();
+
+            for (int i = 0; i < cards.Length; i++)
+            {
+                for (int j = 0; j < cards.Length - 1; j++)
+                {
+                    if (_cardsImportance[cards[j]] > _cardsImportance[cards[j + 1]])
+                    {
+                        (cards[j], cards[j + 1]) = (cards[j + 1], cards[j]);
+                    }
+                }
+            }
+
+            return cards;
+        }
 
         public Card GetTopCard()
         {
@@ -43,7 +61,7 @@ namespace CardGame_Fool.GameFool
         private static Card[] GenerateCards()
         {
             Card[] cardsDeck = new Card[_cardsCount];
-            
+ 
             int cardNumber = 0;
 
             for (int i = 0; i < _suitsCount; i++)
