@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CardGame_Fool.GameFool;
+namespace CardGame_Fool.Model;
 
-internal class LivePlayer //: IPlayer
+public enum PlayerActions
 {
+    MakeMove,
+    BeatCard,
+    TakeCards
 }
-
-internal delegate Card EventHandlerLivePlayer();

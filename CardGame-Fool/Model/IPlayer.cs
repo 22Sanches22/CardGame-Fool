@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CardGame_Fool.GameFool;
+namespace CardGame_Fool.Model;
 
 public interface IPlayer
 {
@@ -21,7 +21,8 @@ public interface IPlayer
     public Card[] Cards { get; }
     public int CardsCount { get; }
 
-    public Card[] GetTrumpCards(Suits trumpSuit);
+    public Card[] GetTrumpCards();
+    public Card[] GetSortedCards();
 
     public void SetAction(PlayerActions action);
     public PlayerActions WaitСhoiceAction();
@@ -33,11 +34,4 @@ public interface IPlayer
 
     public Card WaitCardChoiceToMakeMove();
     public Card WaitCardChoiceToBeatCard();
-}
-
-public enum PlayerActions
-{
-    MakeMove,
-    BeatCard,
-    TakeCards
 }

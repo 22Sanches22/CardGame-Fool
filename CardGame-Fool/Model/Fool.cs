@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 
-namespace CardGame_Fool.GameFool;
+namespace CardGame_Fool.Model;
 
 /// <summary> It is a model of the card game "Fool". </summary>
 public class Fool
@@ -11,7 +11,7 @@ public class Fool
     private readonly IPlayer _player1;
     private readonly IPlayer _player2;
 
-    private readonly Deck _cardsDeck = new();
+    private readonly Deck _deck = new();
 
     public Fool(IPlayer player1, IPlayer player2)
     {
@@ -22,8 +22,8 @@ public class Fool
     /// <returns> Winner or draw. </returns>
     public GameResults StartGame()
     {
-        _player1.TakeСardsFromDeck(_cardsDeck, IPlayer.MaxCardsCount);
-        _player2.TakeСardsFromDeck(_cardsDeck, IPlayer.MaxCardsCount);
+        _player1.TakeСardsFromDeck(_deck, IPlayer.MaxCardsCount);
+        _player2.TakeСardsFromDeck(_deck, IPlayer.MaxCardsCount);
 
         IPlayer firstPlayer = IdentifyFirstPlayer();
         IPlayer secondPlayer = (firstPlayer == _player1) ? _player2 : _player1;
@@ -85,7 +85,7 @@ public class Fool
         {
             if ((player.CardsCount > 0) && (player.CardsCount < IPlayer.MaxCardsCount))
             {
-                player.TakeСardsFromDeck(_cardsDeck, IPlayer.MaxCardsCount - player.CardsCount);
+                player.TakeСardsFromDeck(_deck, IPlayer.MaxCardsCount - player.CardsCount);
             }
         }
     }
@@ -127,8 +127,8 @@ public class Fool
 
         IPlayer? ComparePlayersTrumps()
         {
-            Card[] player1Trumps = _player1.GetTrumpCards(_cardsDeck.TrumpSuit);
-            Card[] player2Trumps = _player2.GetTrumpCards(_cardsDeck.TrumpSuit);
+            Card[] player1Trumps = _player1.GetTrumpCards();
+            Card[] player2Trumps = _player2.GetTrumpCards();
 
             if ((player1Trumps.Length + player2Trumps.Length) > 0)
             {
@@ -141,9 +141,7 @@ public class Fool
                     return _player1;
                 }
 
-                return _cardsDeck.CardsImportance[player1Trumps[0]] < _cardsDeck.CardsImportance[player2Trumps[0]]
-                       ? _player1
-                       : _player2;
+                return player1Trumps[0].Importance < player2Trumps[0].Importance ? _player1 : _player2;
             }
 
             return null;
@@ -152,18 +150,16 @@ public class Fool
         // Returns the player based on the results of the comparison.
         IPlayer ComparePlayersAllCards(IPlayer player1, IPlayer player2)
         {
-            Card[] sortedPlayer1Cards = _cardsDeck.SortCardsCollection(player1.Cards);
-            Card[] sortedPlayer2Cards = _cardsDeck.SortCardsCollection(player2.Cards);
+            Card[] sortedPlayer1Cards = player1.GetSortedCards();
+            Card[] sortedPlayer2Cards = player2.GetSortedCards();
 
             for (int i = 0; i < Math.Min(sortedPlayer1Cards.Length, sortedPlayer2Cards.Length); i++)
             {
-                if (_cardsDeck.CardsImportance[sortedPlayer1Cards[i]]
-                    < _cardsDeck.CardsImportance[sortedPlayer2Cards[i]])
+                if (sortedPlayer1Cards[i].Importance < sortedPlayer2Cards[i].Importance)
                 {
                     return player1;
                 }
-                else if (_cardsDeck.CardsImportance[sortedPlayer1Cards[i]]
-                    > _cardsDeck.CardsImportance[sortedPlayer2Cards[i]])
+                else if (sortedPlayer1Cards[i].Importance > sortedPlayer2Cards[i].Importance)
                 {
                     return player2;
                 }

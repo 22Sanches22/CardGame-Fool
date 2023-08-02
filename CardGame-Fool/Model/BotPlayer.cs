@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 
-namespace CardGame_Fool.GameFool;
+namespace CardGame_Fool.Model;
 
 internal class BotPlayer : IPlayer
 {
@@ -25,10 +25,15 @@ internal class BotPlayer : IPlayer
 
     public Card[] Cards => _cards.ToArray();
     public int CardsCount => _cards.Count;
-    
-    public Card[] GetTrumpCards(Suits trumpSuit)
+
+    public Card[] GetTrumpCards()
     {
-        return _cards.Where(card => card.Suit == trumpSuit).ToArray();
+        return _cards.Where(card => card.IsTrump).ToArray();
+    }
+
+    public Card[] GetSortedCards()
+    {
+        return _cards.OrderBy(card => card.Importance).ToArray();
     }
 
     public void SetAction(PlayerActions action)

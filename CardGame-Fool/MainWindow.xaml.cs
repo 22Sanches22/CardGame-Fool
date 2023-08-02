@@ -13,7 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-using CardGame_Fool.GameFool;
+using CardGame_Fool.Model;
 
 namespace CardGame_Fool;
 
