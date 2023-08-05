@@ -3,78 +3,16 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 
-namespace CardGame_Fool.Model;
+namespace CardGameFool.Model;
 
-internal class BotPlayer : IPlayer
+internal class BotPlayer : Player
 {
-    private readonly List<Card> _cards = new(IPlayer.MaxCardsCount);
+    public BotPlayer(string name) : base(name) { }
 
-    private PlayerActions? _choicedAction = null;
+    public override event Action? MakeMoved;
+    public override event Action? BeatedCard;
 
-    public BotPlayer(string name)
-    {
-        Name = name;
-    }
-
-    public event Action? TakedСardsFromDeck;
-    public event Action? MakeMoved;
-    public event Action? BeatedCard;
-    public event Action? TakedCards;
-
-    public string Name { get; }
-
-    public Card[] Cards => _cards.ToArray();
-    public int CardsCount => _cards.Count;
-
-    public Card[] GetTrumpCards()
-    {
-        return _cards.Where(card => card.IsTrump).ToArray();
-    }
-
-    public Card[] GetSortedCards()
-    {
-        return _cards.OrderBy(card => card.Importance).ToArray();
-    }
-
-    public void SetAction(PlayerActions action)
-    {
-        _choicedAction = action;
-    }
-
-    public PlayerActions WaitСhoiceAction()
-    {
-        while (_choicedAction is null)
-            ;
-
-        PlayerActions returnedValue = (PlayerActions)_choicedAction;
-        _choicedAction = null;
-
-        return returnedValue;
-    }
-    
-    public void TakeСardsFromDeck(Deck cardsDeck, int cardsCount)
-    {
-        if ((cardsCount < 0) || (cardsCount > IPlayer.MaxCardsCount))
-        {
-            throw new InvalidOperationException("The number of cards requested is less than zero " +
-                "or greater than the maximum allowed.");
-        }
-
-        // If there are not enough cards in the deck, he takes all that is.
-        if (cardsCount > cardsDeck.CardsCount)
-        {
-            cardsCount = cardsDeck.CardsCount;
-        }
-        
-        for (var i = 0; i < cardsCount; i++)
-        {
-            _cards.Add(cardsDeck.GetTopCard());
-        }
-
-        TakedСardsFromDeck?.Invoke();
-    }
-
-    public void MakeMove(Card cardToMove)
+    public override void MakeMove(Card cardToMove)
     {
         if (!_cards.Contains(cardToMove))
         {
@@ -86,7 +24,7 @@ internal class BotPlayer : IPlayer
         MakeMoved?.Invoke();
     }
 
-    public void BeatCard(Card cardToBeat)
+    public override void BeatCard(Card cardToBeat)
     {
         if (!_cards.Contains(cardToBeat))
         {
@@ -98,20 +36,13 @@ internal class BotPlayer : IPlayer
         BeatedCard?.Invoke();
     }
 
-    public void TakeCards(IEnumerable<Card> сards)
+    public override Card WaitCardChoiceToMakeMove()
     {
-        _cards.AddRange(_cards);
-
-        TakedCards?.Invoke();
+        return new Card(Ranks.Seven, Suits.Clubs, Suits.Clubs);
     }
 
-    public Card WaitCardChoiceToMakeMove()
+    public override Card WaitCardChoiceToBeatCard()
     {
-
-    }
-
-    public Card WaitCardChoiceToBeatCard()
-    {
-        
+        return new Card(Ranks.Seven, Suits.Clubs, Suits.Clubs);
     }
 }

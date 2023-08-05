@@ -1,0 +1,32 @@
+﻿<Window x:Class="CardGameFool.UI.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:CardGameFool.UI"
+        mc:Ignorable="d"
+        Title="Card game - Fool"
+        SizeToContent="WidthAndHeight"
+        Background="#FF080A25"
+        ResizeMode="CanMinimize">
+    <Grid x:Name="Workspace" Width="850" Height="500">
+        <Rectangle>
+            <Rectangle.Fill>
+                <RadialGradientBrush GradientOrigin="0,0" Center="0,0">
+                    <GradientStop Color="#FF10133A"/>
+                    <GradientStop Color="#191B96F3" Offset="1"/>
+                </RadialGradientBrush>
+            </Rectangle.Fill>
+        </Rectangle>
+        <Rectangle>
+            <Rectangle.Fill>
+                <RadialGradientBrush GradientOrigin="0.7,1" Center="1,1">
+                    <GradientStop Color="#FF10133A"/>
+                    <GradientStop Color="#191B96F3" Offset="1"/>
+                </RadialGradientBrush>
+            </Rectangle.Fill>
+        </Rectangle>
+
+        <local:CardUI/>
+    </Grid>
+</Window>

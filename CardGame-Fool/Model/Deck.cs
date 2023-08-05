@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CardGame_Fool.Model
+namespace CardGameFool.Model
 {
     public class Deck
     {
@@ -24,31 +24,25 @@ namespace CardGame_Fool.Model
             GenerateCards();
             ShuffleCards();
 
-            MoveRandomTrumpToEndList();
+            ChoiceTrump();
         }
 
-        public int CardsCount => _cards.Count;
+        /// <returns> The number of card in deck. </returns>
+        public int Count => _cards.Count;
 
+        /// <returns> The first of card in deck. </returns>
         public Card GetTopCard()
         {
+            if (Count <= 0)
+            {
+                throw new InvalidOperationException("The deck is empty.");
+            }
+
             Card topCard = _cards[0];
 
             _cards.Remove(topCard);
 
             return topCard;
-        }
-
-        private void ShuffleCards()
-        {
-            Random random = new();
-
-            for (int i = 0; i < _maxCardsCount; i++)
-            {
-                int index1 = random.Next(0, _maxCardsCount);
-                int index2 = random.Next(0, _maxCardsCount);
-
-                (_cards[index1], _cards[index2]) = (_cards[index2], _cards[index1]);
-            }
         }
 
         private void GenerateCards()
@@ -65,10 +59,30 @@ namespace CardGame_Fool.Model
             }
         }
 
-        private void MoveRandomTrumpToEndList()
+        private void ShuffleCards()
         {
-            Card[] allTrump = _cards.Where(card => card.IsTrump).ToArray();
+            Random random = new();
 
+            for (int i = 0; i < _maxCardsCount; i++)
+            {
+                int index1 = random.Next(0, _maxCardsCount);
+                int index2 = random.Next(0, _maxCardsCount);
+
+                (_cards[index1], _cards[index2]) = (_cards[index2], _cards[index1]);
+            }
+        }
+
+        /// <summary> 
+        /// Choices a random trump card and places it at the end of the deck if the last card is not a trump card.
+        /// </summary>
+        private void ChoiceTrump()
+        {
+            if (_cards[^1].IsTrump)
+            {
+                return;
+            }
+
+            Card[] allTrump = _cards.Where(card => card.IsTrump).ToArray();
             Card trumpCard = allTrump[new Random().Next(allTrump.Length)];
 
             _cards.Remove(trumpCard);

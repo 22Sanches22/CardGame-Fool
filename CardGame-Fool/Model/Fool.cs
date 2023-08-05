@@ -2,18 +2,19 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Security.Policy;
 
-namespace CardGame_Fool.Model;
+namespace CardGameFool.Model;
 
 /// <summary> It is a model of the card game "Fool". </summary>
 public class Fool
 {
-    private readonly IPlayer _player1;
-    private readonly IPlayer _player2;
+    private readonly Player _player1;
+    private readonly Player _player2;
 
     private readonly Deck _deck = new();
 
-    public Fool(IPlayer player1, IPlayer player2)
+    public Fool(Player player1, Player player2)
     {
         _player1 = player1;
         _player2 = player2;
@@ -22,22 +23,22 @@ public class Fool
     /// <returns> Winner or draw. </returns>
     public GameResults StartGame()
     {
-        _player1.TakeСardsFromDeck(_deck, IPlayer.MaxCardsCount);
-        _player2.TakeСardsFromDeck(_deck, IPlayer.MaxCardsCount);
+        _player1.TakeСardsFromDeck(_deck, Player.MaxCardsCount);
+        _player2.TakeСardsFromDeck(_deck, Player.MaxCardsCount);
 
-        IPlayer firstPlayer = IdentifyFirstPlayer();
-        IPlayer secondPlayer = (firstPlayer == _player1) ? _player2 : _player1;
+        Player firstPlayer = IdentifyFirstPlayer();
+        Player secondPlayer = (firstPlayer == _player1) ? _player2 : _player1;
 
         GameResults? gameResult = null;
-        
-        List<Card> cardsOnTable = new(IPlayer.MaxCardsCount * 2);
+
+        List<Card> cardsOnTable = new(Player.MaxCardsCount * 2);
 
         while (gameResult is null)
         {
             FirstPlayerMove();
 
             PlayerActions chosenActionSecondPlayer = secondPlayer.WaitСhoiceAction();
-            
+
             if (chosenActionSecondPlayer == PlayerActions.TakeCards)
             {
                 secondPlayer.TakeCards(cardsOnTable);
@@ -51,7 +52,7 @@ public class Fool
                     chosenActionFirstPlayer = firstPlayer.WaitСhoiceAction();
                 }
 
-                gameResult = TryGetGameResult(firstPlayer, secondPlayer);
+                TryDetermineGameResult();
 
                 continue;
             }
@@ -61,118 +62,113 @@ public class Fool
 
             cardsOnTable.Clear();
 
-            gameResult = TryGetGameResult(firstPlayer, secondPlayer);
+            TryDetermineGameResult();
+
+            ReplenishCardsPlayer(firstPlayer);
+            ReplenishCardsPlayer(secondPlayer);
 
             // Exchange of roles, now the one who made the move beat сards.
             (firstPlayer, secondPlayer) = (secondPlayer, firstPlayer);
-
-            ReplenishCards(_player1);
-            ReplenishCards(_player2);
         }
 
         return (GameResults)gameResult;
 
-        
+
         void FirstPlayerMove()
         {
-            Card cardToMakeMoveFirstPlayer = firstPlayer.WaitCardChoiceToMakeMove();
-            firstPlayer.MakeMove(cardToMakeMoveFirstPlayer);
+            Card cardToMakeMove = firstPlayer.WaitCardChoiceToMakeMove();
+            firstPlayer.MakeMove(cardToMakeMove);
 
-            cardsOnTable.Add(cardToMakeMoveFirstPlayer);
+            cardsOnTable.Add(cardToMakeMove);
         }
 
-        void ReplenishCards(IPlayer player)
+        // Determines the result of the game if the deck is empty. 
+        void TryDetermineGameResult()
         {
-            if ((player.CardsCount > 0) && (player.CardsCount < IPlayer.MaxCardsCount))
+            if (_deck.Count > 0)
             {
-                player.TakeСardsFromDeck(_deck, IPlayer.MaxCardsCount - player.CardsCount);
+                return;
+            }
+
+            if ((_player1.CardsCount + _player2.CardsCount) == 0)
+            {
+                gameResult = GameResults.Draw;
+            }
+            else if (_player1.CardsCount == 0)
+            {
+                gameResult = GameResults.WinnerPlayer1;
+            }
+            else if (_player2.CardsCount == 0)
+            {
+                gameResult = GameResults.WinnerPlayer2;
             }
         }
-    }
 
-    /// <returns> Draw if both players have no cards or winner if there is one, otherwise null. </returns>
-    private static GameResults? TryGetGameResult(IPlayer player1, IPlayer player2)
-    {
-        if ((player1.CardsCount == 0) || (player2.CardsCount == 0))
+        void ReplenishCardsPlayer(Player player)
         {
-            if (player1.CardsCount == player2.CardsCount)
+            if ((player.CardsCount > 0) && (player.CardsCount < Player.MaxCardsCount))
             {
-                return GameResults.Draw;
-            }
-            else if (player1.CardsCount == 0)
-            {
-                return GameResults.WinnerPlayer1;
-            }
-            else if (player2.CardsCount == 0)
-            {
-                return GameResults.WinnerPlayer2;
+                player.TakeСardsFromDeck(_deck, Player.MaxCardsCount - player.CardsCount);
             }
         }
 
-        return null;
     }
 
     /// <returns> The player make move first. </returns>
-    private IPlayer IdentifyFirstPlayer()
+    private Player IdentifyFirstPlayer()
     {
-        IPlayer? trumpsCompareResult = ComparePlayersTrumps();
+        Player? lowestTrumpPlayer = ComparePlayersTrumps();
 
-        if (trumpsCompareResult is not null)
+        if (lowestTrumpPlayer is not null)
         {
-            return trumpsCompareResult;
+            return lowestTrumpPlayer;
         }
 
-        return ComparePlayersAllCards(_player1, _player2);
-        
+        return ComparePlayersAllCards();
 
-        IPlayer? ComparePlayersTrumps()
+
+        // Returns the player based on the results of the comparison trump cards.
+        Player? ComparePlayersTrumps()
         {
-            Card[] player1Trumps = _player1.GetTrumpCards();
-            Card[] player2Trumps = _player2.GetTrumpCards();
+            Card[] trumps1 = _player1.GetTrumpCards();
+            Card[] trumps2 = _player2.GetTrumpCards();
 
-            if ((player1Trumps.Length + player2Trumps.Length) > 0)
+            if ((trumps1.Length + trumps2.Length) > 0)
             {
-                if (player1Trumps.Length == 0)
+                if (trumps1.Length == 0)
                 {
                     return _player2;
                 }
-                else if (player2Trumps.Length == 0)
+                else if (trumps2.Length == 0)
                 {
                     return _player1;
                 }
 
-                return player1Trumps[0].Importance < player2Trumps[0].Importance ? _player1 : _player2;
+                return trumps1[0].Importance < trumps2[0].Importance ? _player1 : _player2;
             }
 
             return null;
         }
 
-        // Returns the player based on the results of the comparison.
-        IPlayer ComparePlayersAllCards(IPlayer player1, IPlayer player2)
+        // Returns the player based on the results of the comparison all cards.
+        Player ComparePlayersAllCards()
         {
-            Card[] sortedPlayer1Cards = player1.GetSortedCards();
-            Card[] sortedPlayer2Cards = player2.GetSortedCards();
+            Card[] sortedCards1 = _player1.GetSortedCards();
+            Card[] sortedCards2 = _player2.GetSortedCards();
 
-            for (int i = 0; i < Math.Min(sortedPlayer1Cards.Length, sortedPlayer2Cards.Length); i++)
+            for (int i = 0; i < Math.Min(sortedCards1.Length, sortedCards2.Length); i++)
             {
-                if (sortedPlayer1Cards[i].Importance < sortedPlayer2Cards[i].Importance)
+                if (sortedCards1[i].Importance < sortedCards2[i].Importance)
                 {
-                    return player1;
+                    return _player1;
                 }
-                else if (sortedPlayer1Cards[i].Importance > sortedPlayer2Cards[i].Importance)
+                else if (sortedCards1[i].Importance > sortedCards2[i].Importance)
                 {
-                    return player2;
+                    return _player2;
                 }
             }
 
-            return new Random().Next(2) == 0 ? player1: player2;
+            return new Random().Next(2) == 0 ? _player1 : _player2;
         }
     }
-}
-
-public enum GameResults
-{
-    WinnerPlayer1,
-    WinnerPlayer2,
-    Draw
 }

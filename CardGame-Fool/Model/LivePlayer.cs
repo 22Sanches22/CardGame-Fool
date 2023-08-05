@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CardGame_Fool.Model;
+namespace CardGameFool.Model;
 
 internal class LivePlayer //: IPlayer
 {

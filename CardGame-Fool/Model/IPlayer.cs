@@ -5,12 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CardGame_Fool.Model;
+namespace CardGameFool.Model;
 
 public interface IPlayer
 {
-    public const int MaxCardsCount = 6;
-
     public event Action? TakedСardsFromDeck;
     public event Action? MakeMoved;
     public event Action? BeatedCard;
