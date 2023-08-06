@@ -9,24 +9,21 @@
         SizeToContent="WidthAndHeight"
         Background="#FF080A25"
         ResizeMode="CanMinimize">
-    <Grid x:Name="Workspace" Width="850" Height="500">
-        <Rectangle>
-            <Rectangle.Fill>
-                <RadialGradientBrush GradientOrigin="0,0" Center="0,0">
-                    <GradientStop Color="#FF10133A"/>
-                    <GradientStop Color="#191B96F3" Offset="1"/>
-                </RadialGradientBrush>
-            </Rectangle.Fill>
-        </Rectangle>
-        <Rectangle>
-            <Rectangle.Fill>
-                <RadialGradientBrush GradientOrigin="0.7,1" Center="1,1">
-                    <GradientStop Color="#FF10133A"/>
-                    <GradientStop Color="#191B96F3" Offset="1"/>
-                </RadialGradientBrush>
-            </Rectangle.Fill>
-        </Rectangle>
+    <Grid x:Name="Workspace"
+          Width="850"
+          Height="500">
+        <Grid.Background>
+            <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                <LinearGradientBrush.RelativeTransform>
+                    <RotateTransform Angle="-45" CenterX="0.5" CenterY="0.5"/>
+                </LinearGradientBrush.RelativeTransform>
+                <GradientStop Color="#FF10133A"/>
+                <GradientStop Color="#FF1766A2" Offset="0.45"/>
+                <GradientStop Color="#FF10133A" Offset="1"/>
+                <GradientStop Color="#FF1766A2" Offset="0.55"/>
+            </LinearGradientBrush>
+        </Grid.Background>
 
-        <local:CardUI/>
+        <local:CardUI Side="Shirt"/>
     </Grid>
 </Window>

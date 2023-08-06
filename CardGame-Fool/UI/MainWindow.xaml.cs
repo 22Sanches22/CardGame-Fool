@@ -28,14 +28,12 @@ public partial class MainWindow : Window
 
         while (deck.Count > 0)
         {
-            Card card = deck.GetTopCard();
-
-            CardUI cardUI = new(card.Rank, card.Suit)
+            CardUI cardUI = new(deck.GetTopCard())
             {
                 HorizontalAlignment = HorizontalAlignment.Left,
                 VerticalAlignment = VerticalAlignment.Top,
                 Margin = new Thickness(offsetX, offsetY, 0, 0),
-                Side = (CardSides)random.Next(2)
+                Side = (CardSides)random.Next(2),
             };
 
             Workspace.Children.Add(cardUI);

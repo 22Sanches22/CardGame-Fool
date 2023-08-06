@@ -9,12 +9,11 @@
              mc:Ignorable="d"
              Width="80"
              Height="110"
-             Cursor="Hand">
+             Cursor="Hand"
+             RenderTransformOrigin="0.5,0.5">
     <UserControl.Resources>
         <Color x:Key="RankForeground">#FF94EEFF</Color>
         <Color x:Key="SuitMinForeground">#fcdf87</Color>
-
-        <Color x:Key="RectangleMinStroke">#ef0195</Color>
 
         <sys:String x:Key="RankText">6</sys:String>
         <sys:String x:Key="SuitText">♣</sys:String>
@@ -61,163 +60,91 @@
                 </Setter.Value>
             </Setter>
         </Style>
-
-        <Style x:Key="RectangleMin">
-            <Setter Property="Rectangle.Width" Value="10"/>
-            <Setter Property="Rectangle.Height" Value="10"/>
-            <Setter Property="Rectangle.Stroke">
-                <Setter.Value>
-                    <SolidColorBrush Color="{DynamicResource RectangleMinStroke}"/>
-                </Setter.Value>
-            </Setter>
-            <Setter Property="Rectangle.Effect">
-                <Setter.Value>
-                    <DropShadowEffect Color="{DynamicResource RectangleMinStroke}"
-                                      Direction="0"                   
-                                      ShadowDepth="0"
-                                      BlurRadius="10">
-                    </DropShadowEffect>
-                </Setter.Value>
-            </Setter>
-        </Style>
     </UserControl.Resources>
-
-    <Grid Width="{Binding Width, ElementName=Workspace}"
-          Height="{Binding Height, ElementName=Workspace}">
-        <Rectangle x:Name="Face"
-                   Width="{Binding Width, ElementName=Workspace}"
-                   Height="{Binding Height, ElementName=Workspace}"
+    <UserControl.RenderTransform>
+        <RotateTransform x:Name="WorkspaceRotate"
+                         Angle="0"/>
+    </UserControl.RenderTransform>
+    
+    <Grid>
+        <Rectangle x:Name="Border"
                    Stroke="#FFE600FF"
+                   StrokeThickness="2"
                    RadiusX="5"
                    RadiusY="5"
-                   StrokeThickness="2">
+                   Panel.ZIndex="1">
+            <Rectangle.Effect>
+                <DropShadowEffect Color="{Binding Stroke.Color, ElementName=Border}"
+                                  Direction="0"
+                                  ShadowDepth="0"
+                                  BlurRadius="10"/>
+            </Rectangle.Effect>
+        </Rectangle>
+
+        <Rectangle StrokeThickness="2"
+                   RadiusX="6"
+                   RadiusY="6">
             <Rectangle.Fill>
-                <RadialGradientBrush
-                    RadiusY="0.8"
-                    RadiusX="0.8"
-                    MappingMode="RelativeToBoundingBox">
+                <RadialGradientBrush RadiusY="0.8"
+                                     RadiusX="0.8"
+                                     MappingMode="RelativeToBoundingBox">
                     <GradientStop Color="#FF541D5A"
                                   Offset="0.008"/>
                     <GradientStop Color="Black"
                                   Offset="1"/>
                 </RadialGradientBrush>
             </Rectangle.Fill>
-
-            <Rectangle.Effect>
-                <DropShadowEffect Color="{Binding Stroke.Color, ElementName=Face}"
-                                  Direction="0"
-                                  ShadowDepth="0"
-                                  BlurRadius="10"/>
-            </Rectangle.Effect>
         </Rectangle>
-        
-        <StackPanel HorizontalAlignment="Left"
-                    VerticalAlignment="Top"
-                    Margin="3.5,1,0,0">
-            <TextBlock Style="{StaticResource RankStyle}"/>
-            <TextBlock Style="{StaticResource SuitMinStyle}"/>
-        </StackPanel>
-
-        <TextBlock x:Name="SuitTxt"
-                   Text="{DynamicResource SuitText}"
-                   Foreground="#f68741"
-                   FontSize="40"
-                   Canvas.Left="14"
-                   Canvas.Top="33"
-                   HorizontalAlignment="Center"
-                   VerticalAlignment="Center"
-                   FontFamily="Yu Gothic UI Semibold">
-
-            <TextBlock.Effect>
-                <DropShadowEffect Color="{Binding Foreground.Color, ElementName=SuitTxt}"
-                                  Direction="0"
-                                  ShadowDepth="0"
-                                  BlurRadius="10"/>
-            </TextBlock.Effect>
-        </TextBlock>
-
-        <StackPanel HorizontalAlignment="Right"
-                    VerticalAlignment="Bottom"
-                    RenderTransformOrigin="0.5,0.5"
-                    Margin="0,0, 3.5, 1">
-            <StackPanel.RenderTransform>
-                <RotateTransform Angle="180"/>
-            </StackPanel.RenderTransform>
-
-            <TextBlock Style="{DynamicResource RankStyle}"/>
-            <TextBlock Style="{DynamicResource SuitMinStyle}"/>
-        </StackPanel>
 
         <Canvas x:Name="Shirt"
-                Width="{Binding Width, ElementName=Workspace}"
-                Height="{Binding Height, ElementName=Workspace}"
-                Visibility="Visible">
-            <Rectangle Width="{Binding Width, ElementName=Workspace}"
-                       Height="{Binding Height, ElementName=Workspace}"
-                       Stroke="#FFE600FF"
-                       RadiusX="5"
-                       RadiusY="5"
-                       StrokeThickness="2">
-                <Rectangle.Fill>
-                    <RadialGradientBrush RadiusY="0.8"
-                                         RadiusX="0.8"
-                                         MappingMode="RelativeToBoundingBox">
-                        <GradientStop Color="#FF541D5A"
-                                      Offset="0.008"/>
-                        <GradientStop Color="Black"
-                                      Offset="1"/>
-                    </RadialGradientBrush>
-                </Rectangle.Fill>
-
-                <Rectangle.Effect>
-                    <DropShadowEffect Color="{Binding Stroke.Color, ElementName=Face}"
-                                      Direction="0"
-                                      ShadowDepth="0"
-                                      BlurRadius="10"/>
-                </Rectangle.Effect>
-            </Rectangle>
-
-            <Polyline x:Name="Rhombus"
-                      Stroke="#fe9593"
-                      Points="40,27.5 20,55 40,82.5 60,55 40,27.5 40,82.5"
-                      StrokeLineJoin="Round">
-                <Polyline.Effect>
-                    <DropShadowEffect Color="{Binding Stroke.Color, ElementName=Rhombus}"
-                                      Direction="0"
-                                      ShadowDepth="0"
-                                      BlurRadius="10"/>
-                </Polyline.Effect>
-            </Polyline>
-
-            <Rectangle x:Name="RectangleBig"
-                       Width="30"
-                       Height="30"
-                       Stroke="#58cee3"
-                       Canvas.Left="25"
-                       Canvas.Top="40">
-                <Rectangle.Effect>
-                    <DropShadowEffect Color="{Binding Stroke.Color, ElementName=RectangleBig}"
-                                      Direction="0"
-                                      ShadowDepth="0"
-                                      BlurRadius="10"/>
-                </Rectangle.Effect>
-            </Rectangle>
-
-            <Rectangle Style="{StaticResource RectangleMin}"
-                       Canvas.Left="15"
-                       Canvas.Top="30"/>
-
-            <Rectangle Style="{StaticResource RectangleMin}"
-                       Canvas.Left="15"
-                       Canvas.Top="70"/>
-
-            <Rectangle Style="{StaticResource RectangleMin}"
-                       Canvas.Left="55"
-                       Canvas.Top="30"/>
-
-            <Rectangle Style="{StaticResource RectangleMin}"
-                       Canvas.Left="55"
-                       Canvas.Top="70"/>
+                Visibility="Hidden"
+                ClipToBounds="True">
+            <Canvas.Clip>
+                <RectangleGeometry RadiusX="6"
+                                   RadiusY="6">
+                    <RectangleGeometry.Rect>
+                        <Rect Width="80" Height="110"/>
+                    </RectangleGeometry.Rect>
+                </RectangleGeometry>
+            </Canvas.Clip>
         </Canvas>
+
+        <Grid x:Name="Face">
+            <StackPanel HorizontalAlignment="Left"
+                        VerticalAlignment="Top"
+                        Margin="3.5,1,0,0">
+                <TextBlock Style="{StaticResource RankStyle}"/>
+                <TextBlock Style="{StaticResource SuitMinStyle}"/>
+            </StackPanel>
+
+            <TextBlock x:Name="SuitTxt"
+                       Text="{DynamicResource SuitText}"
+                       Foreground="#f68741"
+                       FontSize="40"
+                       Canvas.Left="14"
+                       Canvas.Top="33"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       FontFamily="Yu Gothic UI Semibold">
+                <TextBlock.Effect>
+                    <DropShadowEffect Color="{Binding Foreground.Color, ElementName=SuitTxt}"
+                                      Direction="0"
+                                      ShadowDepth="0"
+                                      BlurRadius="10"/>
+                </TextBlock.Effect>
+            </TextBlock>
+
+            <StackPanel HorizontalAlignment="Right"
+                        VerticalAlignment="Bottom"
+                        RenderTransformOrigin="0.5,0.5"
+                        Margin="0,0,3.5,1">
+                <StackPanel.RenderTransform>
+                    <RotateTransform Angle="180"/>
+                </StackPanel.RenderTransform>
+
+                <TextBlock Style="{DynamicResource RankStyle}"/>
+                <TextBlock Style="{DynamicResource SuitMinStyle}"/>
+            </StackPanel>
+        </Grid>
     </Grid>
 </UserControl>
