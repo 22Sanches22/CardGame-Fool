@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Ink;
 using System.Windows.Media;
 using System.Windows.Media.Effects;
 using System.Windows.Shapes;
+
 using CardGameFool.Model;
 
 namespace CardGameFool.UI;
@@ -40,6 +40,12 @@ public partial class CardUI : UserControl
         Suit = card.Suit;
     }
 
+    public CardUI(Ranks rank, Suits suit) : this()
+    {
+        Rank = rank;
+        Suit = suit;
+    }
+
     public Ranks Rank
     {
         get => _rank;
@@ -47,7 +53,7 @@ public partial class CardUI : UserControl
         {
             _rank = value;
 
-            Resources["RankText"] = $"{(_rank < Ranks.Jack ? ((int)_rank) : _rank)}"[0].ToString();
+            Resources["RankText"] = $"{(_rank < Ranks.Jack ? ((int)_rank).ToString() : _rank.ToString()[0])}";
         }
     }
 
@@ -97,7 +103,7 @@ public partial class CardUI : UserControl
         const int interval = 15;
         const int angle = 90;
 
-        int heightAllowance = (int)Width / 2;
+        int heightIncrease = (int)Width / 2;
 
         Color color = (Color)ColorConverter.ConvertFromString("#10133a");//#10133a //#fcdf87 //#fecc50 //#320938
         Brush stroke = new SolidColorBrush(color);
@@ -110,10 +116,10 @@ public partial class CardUI : UserControl
             BlurRadius = 10
         };
 
-        CreateLines(interval - angle, 0, 0, Height + heightAllowance);
-        CreateLines(interval, angle - interval, Height, -heightAllowance, 1);
-        CreateLines(interval, angle - interval, 0, Height + heightAllowance, leftOffset: Width);
-        CreateLines(interval - angle, 0, Height, -heightAllowance, 1, Width);
+        CreateLines(interval - angle, 0, 0, Height + heightIncrease);
+        CreateLines(interval, angle - interval, Height, -heightIncrease, 1);
+        CreateLines(interval, angle - interval, 0, Height + heightIncrease, leftOffset: Width);
+        CreateLines(interval - angle, 0, Height, -heightIncrease, 1, Width);
 
 
         void CreateLines(int i, int maxI, double y1, double y2, double renderPointY = 0, double leftOffset = 0)
@@ -137,7 +143,6 @@ public partial class CardUI : UserControl
 
                 Shirt.Children.Add(line);
             }
-            
         }
     }
 }

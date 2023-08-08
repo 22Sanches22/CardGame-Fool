@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace CardGameFool.Model;
 
-public abstract class Player// : IPlayer
+public abstract class Player
 {
     /// <summary> The maximum count of cards in a player's hands. </summary>
     public const int MaxCardsCount = 6;
@@ -26,14 +23,15 @@ public abstract class Player// : IPlayer
 
     public abstract event Action? MakeMoved;
     public abstract event Action? BeatedCard;
+
     public event Action? TakedСardsFromDeck;
     public event Action? TakedCards;
 
     public string Name { get; }
 
-    public abstract void MakeMove(Card cardToMove);
+    public abstract void MakeMove(Card card);
 
-    public abstract void BeatCard(Card cardToBeat);
+    public abstract void BeatCard(Card card);
 
     public Card[] GetTrumpCards()
     {
@@ -91,5 +89,6 @@ public abstract class Player// : IPlayer
     }
 
     public abstract Card WaitCardChoiceToMakeMove();
+
     public abstract Card WaitCardChoiceToBeatCard();
 }

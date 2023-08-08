@@ -3,27 +3,48 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:CardGameFool.UI"
+        xmlns:ui="clr-namespace:CardGameFool.UI"
         mc:Ignorable="d"
         Title="Card game - Fool"
         SizeToContent="WidthAndHeight"
-        Background="#FF080A25"
         ResizeMode="CanMinimize">
-    <Grid x:Name="Workspace"
-          Width="850"
-          Height="500">
-        <Grid.Background>
-            <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                <LinearGradientBrush.RelativeTransform>
-                    <RotateTransform Angle="-45" CenterX="0.5" CenterY="0.5"/>
-                </LinearGradientBrush.RelativeTransform>
-                <GradientStop Color="#FF10133A"/>
-                <GradientStop Color="#FF1766A2" Offset="0.45"/>
-                <GradientStop Color="#FF10133A" Offset="1"/>
-                <GradientStop Color="#FF1766A2" Offset="0.55"/>
-            </LinearGradientBrush>
-        </Grid.Background>
+    <Window.Background>
+        <LinearGradientBrush EndPoint="0.5,1"
+                             StartPoint="0.5,0">
+            <LinearGradientBrush.RelativeTransform>
+                <RotateTransform Angle="-45"
+                                 CenterX="0.5"
+                                 CenterY="0.5"/>
+            </LinearGradientBrush.RelativeTransform>
+            <GradientStop Color="#FF17103A"/>
+            <GradientStop Color="#FF3B2998"
+                          Offset="0.459"/>
+            <GradientStop Color="#FF17103A"
+                          Offset="1"/>
+            <GradientStop Color="#FF3B2998" 
+                          Offset="0.55"/>
+        </LinearGradientBrush>
+    </Window.Background>
 
-        <local:CardUI Side="Shirt"/>
-    </Grid>
+    <Canvas x:Name="Workspace"
+            Width="850"
+            Height="500">
+
+        <ui:DeckUI x:Name="Deck"
+                   TrumpRank="Ace"
+                   TrumpSuit="Diamonds"
+                   Canvas.Top="182"
+                   Canvas.Left="14"/>
+
+        <ui:PlayerCards x:Name="Player1Cards" Canvas.Left="300" Canvas.Top="343" HorizontalAlignment="Center" VerticalAlignment="Top"/>
+        <ui:PlayerCards x:Name="Player2Cards" Canvas.Left="300" RenderTransformOrigin="0.5,0.5" HorizontalAlignment="Center" Canvas.Top="6" VerticalAlignment="Top">
+            <ui:PlayerCards.RenderTransform>
+                <RotateTransform Angle="180"/>
+            </ui:PlayerCards.RenderTransform>
+        </ui:PlayerCards>
+
+        <ui:Slots x:Name="CardsSlots"
+                  Canvas.Left="194"
+                  Canvas.Top="176"/>
+    </Canvas>
 </Window>

@@ -12,26 +12,26 @@ internal class BotPlayer : Player
     public override event Action? MakeMoved;
     public override event Action? BeatedCard;
 
-    public override void MakeMove(Card cardToMove)
+    public override void MakeMove(Card card)
     {
-        if (!_cards.Contains(cardToMove))
+        if (!_cards.Contains(card))
         {
             throw new ArgumentException("The requested card is not in the player's hand.");
         }
 
-        _cards.Remove(cardToMove);
+        _cards.Remove(card);
 
         MakeMoved?.Invoke();
     }
 
-    public override void BeatCard(Card cardToBeat)
+    public override void BeatCard(Card card)
     {
-        if (!_cards.Contains(cardToBeat))
+        if (!_cards.Contains(card))
         {
             throw new ArgumentException("The requested card is not in the player's hand.");
         }
 
-        _cards.Remove(cardToBeat);
+        _cards.Remove(card);
 
         BeatedCard?.Invoke();
     }

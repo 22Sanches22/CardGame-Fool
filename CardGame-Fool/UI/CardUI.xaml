@@ -5,7 +5,6 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
-             xmlns:local="clr-namespace:CardGameFool"
              mc:Ignorable="d"
              Width="80"
              Height="110"
@@ -16,19 +15,19 @@
         <Color x:Key="SuitMinForeground">#fcdf87</Color>
 
         <sys:String x:Key="RankText">6</sys:String>
-        <sys:String x:Key="SuitText">♣</sys:String>
+        <sys:String x:Key="SuitText">♠</sys:String>
 
-        <Style x:Key="RankStyle">
-            <Setter Property="TextBlock.Foreground">
+        <Style x:Key="RankStyle" TargetType="TextBlock">
+            <Setter Property="Foreground">
                 <Setter.Value>
                     <SolidColorBrush Color="{DynamicResource RankForeground}"/>
                 </Setter.Value>
             </Setter>
-            <Setter Property="TextBlock.Text" Value="{DynamicResource RankText}"/>
-            <Setter Property="TextBlock.FontSize" Value="16"/>
-            <Setter Property="TextBlock.FontFamily" Value="Yu Gothic UI Semibold"/>
-            <Setter Property="TextBlock.TextAlignment" Value="Center"/>
-            <Setter Property="TextBlock.Effect">
+            <Setter Property="Text" Value="{DynamicResource RankText}"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontFamily" Value="Yu Gothic UI Semibold"/>
+            <Setter Property="TextAlignment" Value="Center"/>
+            <Setter Property="Effect">
                 <Setter.Value>
                     <DropShadowEffect Color="{DynamicResource RankForeground}"
                                       Direction="0"                   
@@ -39,18 +38,18 @@
             </Setter>
         </Style>
 
-        <Style x:Key="SuitMinStyle">
-            <Setter Property="TextBlock.Foreground">
+        <Style x:Key="SuitMinStyle" TargetType="TextBlock">
+            <Setter Property="Foreground">
                 <Setter.Value>
                     <SolidColorBrush Color="{DynamicResource SuitMinForeground}"/>
                 </Setter.Value>
             </Setter>
-            <Setter Property="TextBlock.Text" Value="{DynamicResource SuitText}"/>
-            <Setter Property="TextBlock.FontSize" Value="13"/>
-            <Setter Property="TextBlock.FontFamily" Value="Yu Gothic UI Semibold"/>
-            <Setter Property="TextBlock.TextAlignment" Value="Center"/>
-            <Setter Property="TextBlock.Margin" Value="0,-2.5,0,0"/>
-            <Setter Property="TextBlock.Effect">
+            <Setter Property="Text" Value="{DynamicResource SuitText}"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontFamily" Value="Yu Gothic UI Semibold"/>
+            <Setter Property="TextAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,-2.5,0,0"/>
+            <Setter Property="Effect">
                 <Setter.Value>
                     <DropShadowEffect Color="{DynamicResource SuitMinForeground}"
                                       Direction="0"                   
@@ -68,7 +67,7 @@
     
     <Grid>
         <Rectangle x:Name="Border"
-                   Stroke="#FFE600FF"
+                   Stroke="#FF760082"
                    StrokeThickness="2"
                    RadiusX="5"
                    RadiusY="5"

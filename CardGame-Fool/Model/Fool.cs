@@ -12,12 +12,14 @@ public class Fool
     private readonly Player _player1;
     private readonly Player _player2;
 
-    private readonly Deck _deck = new();
+    private readonly Deck _deck;
 
-    public Fool(Player player1, Player player2)
+    public Fool(Player player1, Player player2, Deck deck)
     {
         _player1 = player1;
         _player2 = player2;
+
+        _deck = deck;
     }
 
     /// <returns> Winner or draw. </returns>

@@ -9,11 +9,12 @@ namespace CardGameFool.Model
 {
     public class Deck
     {
+        public const int MaxCardsCount = 36;
+
         private const int _suitsCount = 4;
         private const int _ranksCount = 9;
-        private const int _maxCardsCount = _suitsCount * _ranksCount;
 
-        private readonly List<Card> _cards = new(_maxCardsCount);
+        private readonly List<Card> _cards = new(MaxCardsCount);
 
         private readonly Suits _trumpSuit;
 
@@ -30,10 +31,12 @@ namespace CardGameFool.Model
         /// <returns> The number of card in deck. </returns>
         public int Count => _cards.Count;
 
+        public Card TrumpCard => _cards[^1];
+
         /// <returns> The first of card in deck. </returns>
         public Card GetTopCard()
         {
-            if (Count <= 0)
+            if (Count < 1)
             {
                 throw new InvalidOperationException("The deck is empty.");
             }
@@ -63,10 +66,10 @@ namespace CardGameFool.Model
         {
             Random random = new();
 
-            for (int i = 0; i < _maxCardsCount; i++)
+            for (int i = 0; i < MaxCardsCount; i++)
             {
-                int index1 = random.Next(0, _maxCardsCount);
-                int index2 = random.Next(0, _maxCardsCount);
+                int index1 = random.Next(0, MaxCardsCount);
+                int index2 = random.Next(0, MaxCardsCount);
 
                 (_cards[index1], _cards[index2]) = (_cards[index2], _cards[index1]);
             }

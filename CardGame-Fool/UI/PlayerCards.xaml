@@ -1,0 +1,20 @@
+﻿<UserControl x:Class="CardGameFool.UI.PlayerCards"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:CardGameFool.UI"
+             mc:Ignorable="d" 
+             Width="250"
+             Height="151">
+    <UserControl.Resources>
+        <Style TargetType="local:CardUI">
+            <Setter Property="Margin" Value="0,6,0,0"/>
+            <Setter Property="Canvas.Left" Value="85"/>
+            <EventSetter Event="MouseDown" Handler="CardUI_MouseDown"/>
+        </Style>
+    </UserControl.Resources>
+    
+    <Canvas x:Name="Workspace"/>
+
+</UserControl>
