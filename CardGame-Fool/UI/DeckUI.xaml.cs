@@ -1,7 +1,6 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
-
-using CardGameFool.Model;
+using CardGameFool.Model.Cards;
 
 namespace CardGameFool.UI;
 
@@ -17,21 +16,13 @@ public partial class DeckUI : UserControl
         InitializeComponent();
     }
 
-    public Ranks TrumpRank
+    public CardUI TrumpCard
     {
-        get => Trump.Rank;
+        get => TrumpCardUI;
         set
         {
-            Trump.Rank = value;
-        }
-    }
-
-    public Suits TrumpSuit
-    {
-        get => Trump.Suit;
-        set
-        {
-            Trump.Suit = value;
+            TrumpCardUI.Rank = value.Rank;
+            TrumpCardUI.Suit = value.Suit;
         }
     }
 
@@ -45,17 +36,19 @@ public partial class DeckUI : UserControl
             if (value < 1)
             {
                 Workspace.Visibility = Visibility.Hidden;
+                return;
             }
             else if (value < 2)
             {
                 TopCard.Visibility = Visibility.Hidden;
-                Workspace.Visibility = Visibility.Visible;
+                
             }
             else if (value > 1)
             {
                 TopCard.Visibility = Visibility.Visible;
-                Workspace.Visibility = Visibility.Visible;
             }
+
+            Workspace.Visibility = Visibility.Visible;
         }
     }
 }

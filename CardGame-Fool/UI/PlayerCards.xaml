@@ -6,15 +6,21 @@
              xmlns:local="clr-namespace:CardGameFool.UI"
              mc:Ignorable="d" 
              Width="250"
-             Height="151">
+             Height="164">
     <UserControl.Resources>
         <Style TargetType="local:CardUI">
-            <Setter Property="Margin" Value="0,6,0,0"/>
-            <Setter Property="Canvas.Left" Value="85"/>
-            <EventSetter Event="MouseDown" Handler="CardUI_MouseDown"/>
+            <Setter Property="Margin"
+                    Value="0,6,0,0"/>
+            <Setter Property="Canvas.Left"
+                    Value="85"/>
         </Style>
     </UserControl.Resources>
-    
-    <Canvas x:Name="Workspace"/>
+
+    <Canvas x:Name="WorkspaceCanvas">
+        <Rectangle x:Name="SatusBar"
+                   Canvas.Top="159"
+                   Width="250"
+                   Height="5"/>
+    </Canvas>
 
 </UserControl>

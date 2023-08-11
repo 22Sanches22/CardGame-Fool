@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using CardGameFool.Model.Cards;
 
-namespace CardGameFool.Model;
+namespace CardGameFool.Model.Players;
 
 public abstract class Player
 {
@@ -11,27 +13,26 @@ public abstract class Player
 
     protected readonly List<Card> _cards = new(MaxCardsCount);
 
-    private PlayerActions? _choicedAction = null;
+    protected Card? _chosenCard = null;
+    private PlayerActions? _chosenAction = null;
 
-    public Player(string name)
+    public Player(string name, PlayerTypes type)
     {
         Name = name;
+        Type = type;
     }
 
     public Card[] Cards => _cards.ToArray();
     public int CardsCount => _cards.Count;
 
+    public event Action<Player>? TakedСardsFromDeck;
+    public event Action? TakedCards;
+
     public abstract event Action? MakeMoved;
     public abstract event Action? BeatedCard;
 
-    public event Action? TakedСardsFromDeck;
-    public event Action? TakedCards;
-
     public string Name { get; }
-
-    public abstract void MakeMove(Card card);
-
-    public abstract void BeatCard(Card card);
+    public PlayerTypes Type { get; }
 
     public Card[] GetTrumpCards()
     {
@@ -43,25 +44,30 @@ public abstract class Player
         return _cards.OrderBy(card => card.Importance).ToArray();
     }
 
-    public void SetAction(PlayerActions action)
+    public void SetChosenCard(Card card)
     {
-        _choicedAction = action;
+        _chosenCard = card;
+    }
+
+    public void SetChosenAction(PlayerActions action)
+    {
+        _chosenAction = action;
     }
 
     public PlayerActions WaitСhoiceAction()
     {
-        while (_choicedAction is null)
+        while (_chosenAction is null)
             ;
 
-        PlayerActions returnedValue = (PlayerActions)_choicedAction;
-        _choicedAction = null;
+        PlayerActions returnedValue = (PlayerActions)_chosenAction;
+        _chosenAction = null;
 
         return returnedValue;
     }
 
     public void TakeСardsFromDeck(Deck deck, int cardsCount)
     {
-        if ((cardsCount < 0) || (cardsCount > MaxCardsCount))
+        if (cardsCount < 0 || cardsCount > MaxCardsCount)
         {
             throw new InvalidOperationException("The number of cards requested is less than zero " +
                 "or greater than the maximum allowed.");
@@ -73,12 +79,12 @@ public abstract class Player
             cardsCount = deck.Count;
         }
 
-        for (var i = 0; i < cardsCount; i++)
+        for (int i = 0; i < cardsCount; i++)
         {
             _cards.Add(deck.GetTopCard());
         }
 
-        TakedСardsFromDeck?.Invoke();
+        TakedСardsFromDeck?.Invoke(this);
     }
 
     public void TakeCards(IEnumerable<Card> сards)
@@ -88,7 +94,8 @@ public abstract class Player
         TakedCards?.Invoke();
     }
 
-    public abstract Card WaitCardChoiceToMakeMove();
+    public abstract void MakeMove(Card card);
+    public abstract void BeatCard(Card card);
 
-    public abstract Card WaitCardChoiceToBeatCard();
+    public abstract Task<Card> AsyncWaitCardChoice();
 }

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace CardGameFool.Model;
+﻿namespace CardGameFool.Model.Cards;
 
 public readonly struct Card
 {
@@ -19,7 +16,6 @@ public readonly struct Card
     public readonly Suits Suit { get; }
 
     public readonly bool IsTrump { get; }
-
     public readonly int Importance { get; }
 
     private readonly int CalculateImportance()

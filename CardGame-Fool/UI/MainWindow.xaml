@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:ui="clr-namespace:CardGameFool.UI"
+        xmlns:local="clr-namespace:CardGameFool.UI"
         mc:Ignorable="d"
         Title="Card game - Fool"
         SizeToContent="WidthAndHeight"
@@ -26,25 +26,48 @@
         </LinearGradientBrush>
     </Window.Background>
 
-    <Canvas x:Name="Workspace"
+    <Canvas x:Name="WorkspaceCanvas"
             Width="850"
             Height="500">
 
-        <ui:DeckUI x:Name="Deck"
-                   TrumpRank="Ace"
-                   TrumpSuit="Diamonds"
-                   Canvas.Top="182"
-                   Canvas.Left="14"/>
+        <local:DeckUI x:Name="CardsDeck"
+                      Canvas.Top="182"
+                      Canvas.Left="14"/>
 
-        <ui:PlayerCards x:Name="Player1Cards" Canvas.Left="300" Canvas.Top="343" HorizontalAlignment="Center" VerticalAlignment="Top"/>
-        <ui:PlayerCards x:Name="Player2Cards" Canvas.Left="300" RenderTransformOrigin="0.5,0.5" HorizontalAlignment="Center" Canvas.Top="6" VerticalAlignment="Top">
-            <ui:PlayerCards.RenderTransform>
+        <local:PlayerCards x:Name="BottomPositionPlayerCards"
+                           Canvas.Left="300"
+                           Canvas.Top="336"
+                           IsActive="True"/>
+        <local:PlayerCards x:Name="TopPositionPlayerCards"
+                           Canvas.Left="300"
+                           RenderTransformOrigin="0.5,0.5"
+                           IsHidden="True">
+            <local:PlayerCards.RenderTransform>
                 <RotateTransform Angle="180"/>
-            </ui:PlayerCards.RenderTransform>
-        </ui:PlayerCards>
+            </local:PlayerCards.RenderTransform>
+        </local:PlayerCards>
 
-        <ui:Slots x:Name="CardsSlots"
-                  Canvas.Left="194"
-                  Canvas.Top="176"/>
+        <local:Slots x:Name="CardsSlots"
+                     Canvas.Left="194"
+                     Canvas.Top="176"/>
+        <Button Canvas.Left="815"
+                Canvas.Top="5"
+                Style="{DynamicResource PauseButtonStyle}"
+                Click="PauseButton_Click">
+            <Canvas>
+                <Line Stroke="#fe9593"
+                  StrokeThickness="3"
+                  X1="8"
+                  X2="8"
+                  Y1="6"
+                  Y2="20"/>
+                <Line Stroke="#fe9593"
+                  StrokeThickness="3"
+                  X1="18"
+                  X2="18"
+                  Y1="6"
+                  Y2="20"/>
+            </Canvas>
+        </Button>
     </Canvas>
 </Window>

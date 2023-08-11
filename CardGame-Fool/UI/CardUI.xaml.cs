@@ -4,7 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Effects;
 using System.Windows.Shapes;
-
+using CardGameFool.Model.Cards;
 using CardGameFool.Model;
 
 namespace CardGameFool.UI;
@@ -34,17 +34,14 @@ public partial class CardUI : UserControl
         GenerateShirt();
     }
 
-    public CardUI(Card card) : this()
-    {
-        Rank = card.Rank;
-        Suit = card.Suit;
-    }
-
     public CardUI(Ranks rank, Suits suit) : this()
     {
         Rank = rank;
         Suit = suit;
     }
+
+    public CardUI(Card card) : this(card.Rank, card.Suit)
+    {}
 
     public Ranks Rank
     {
@@ -53,7 +50,7 @@ public partial class CardUI : UserControl
         {
             _rank = value;
 
-            Resources["RankText"] = $"{(_rank < Ranks.Jack ? ((int)_rank).ToString() : _rank.ToString()[0])}";
+            Resources["RankText"] = $"{(_rank < Ranks.Jack ? ((int)value).ToString() : value.ToString()[0])}";
         }
     }
 
@@ -64,7 +61,7 @@ public partial class CardUI : UserControl
         {
             _suit = value;
 
-            Resources["SuitText"] = suitSymbols[_suit];
+            Resources["SuitText"] = suitSymbols[value];
         }
     }
 
@@ -76,14 +73,13 @@ public partial class CardUI : UserControl
             if (value == CardSides.Face)
             {
                 Face.Visibility = Visibility.Visible;
-                Shirt.Visibility = Visibility.Hidden;
+                ShirtCanvas.Visibility = Visibility.Hidden;
             }
             else
             {
                 Face.Visibility = Visibility.Hidden;
-                Shirt.Visibility = Visibility.Visible;
+                ShirtCanvas.Visibility = Visibility.Visible;
             }
-            
 
             _side = value;
         }
@@ -141,7 +137,7 @@ public partial class CardUI : UserControl
                     Canvas.SetLeft(line, leftOffset);
                 }
 
-                Shirt.Children.Add(line);
+                ShirtCanvas.Children.Add(line);
             }
         }
     }

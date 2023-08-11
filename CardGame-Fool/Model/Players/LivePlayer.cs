@@ -1,13 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
+using System.Threading.Tasks;
 
-namespace CardGameFool.Model;
+using CardGameFool.Model.Cards;
 
-internal class BotPlayer : Player
+namespace CardGameFool.Model.Players;
+
+public class LivePlayer : Player
 {
-    public BotPlayer(string name) : base(name) { }
+    public LivePlayer(string name) : base(name, PlayerTypes.Live)
+    { }
 
     public override event Action? MakeMoved;
     public override event Action? BeatedCard;
@@ -36,13 +37,14 @@ internal class BotPlayer : Player
         BeatedCard?.Invoke();
     }
 
-    public override Card WaitCardChoiceToMakeMove()
+    public override async Task<Card> AsyncWaitCardChoice()
     {
-        return new Card(Ranks.Seven, Suits.Clubs, Suits.Clubs);
-    }
+        while (_chosenCard is null)
+            await Task.Delay(1);
 
-    public override Card WaitCardChoiceToBeatCard()
-    {
-        return new Card(Ranks.Seven, Suits.Clubs, Suits.Clubs);
+        Card returnCard = (Card)_chosenCard;
+
+        _chosenCard = null;
+        return returnCard;
     }
 }

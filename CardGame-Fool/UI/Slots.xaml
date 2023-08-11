@@ -7,22 +7,28 @@
              Width="580"
              Height="149">
     <UserControl.Resources>
-        <Style x:Key="Slot" TargetType="Rectangle">
-            <Setter Property="Width" Value="80"/>
-            <Setter Property="Height" Value="110"/>
-            <Setter Property="Stroke" Value="#FF6521FF"/>
-            <Setter Property="StrokeThickness" Value="2"/>
-            <Setter Property="RadiusX" Value="5"/>
-            <Setter Property="RadiusY" Value="5"/>
+        <Style TargetType="Rectangle">
+            <Setter Property="Width"
+                    Value="80"/>
+            <Setter Property="Height"
+                    Value="110"/>
+            <Setter Property="Stroke"
+                    Value="#FF6521FF"/>
+            <Setter Property="StrokeThickness"
+                    Value="2"/>
+            <Setter Property="RadiusX"
+                    Value="5"/>
+            <Setter Property="RadiusY"
+                    Value="5"/>
         </Style>
     </UserControl.Resources>
 
-    <Canvas x:Name="Workspace">
-        <Rectangle Style="{StaticResource Slot}"/>
-        <Rectangle Style="{StaticResource Slot}" Canvas.Left="100"/>
-        <Rectangle Style="{StaticResource Slot}" Canvas.Left="200"/>
-        <Rectangle Style="{StaticResource Slot}" Canvas.Left="300"/>
-        <Rectangle Style="{StaticResource Slot}" Canvas.Left="400"/>
-        <Rectangle Style="{StaticResource Slot}" Canvas.Left="500"/>
+    <Canvas x:Name="WorkspaceCanvas">
+        <Rectangle/>
+        <Rectangle Canvas.Left="100"/>
+        <Rectangle Canvas.Left="200"/>
+        <Rectangle Canvas.Left="300"/>
+        <Rectangle Canvas.Left="400"/>
+        <Rectangle Canvas.Left="500"/>
     </Canvas>
 </UserControl>

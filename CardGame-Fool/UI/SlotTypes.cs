@@ -1,6 +1,6 @@
 ﻿namespace CardGameFool.UI;
 
-public enum SlotsType
+public enum SlotTypes
 {
     Attacking,
     Defense

@@ -6,5 +6,4 @@ packages/
 Properties/
 obj/
 bin/
-App*
 AssemblyInfo.cs

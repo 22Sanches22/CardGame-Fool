@@ -1,6 +1,11 @@
-﻿using System.Windows;
+﻿using System;
+using System.Collections.Generic;
+using System.Windows;
+using System.Windows.Input;
 
 using CardGameFool.Model;
+using CardGameFool.Model.Cards;
+using CardGameFool.Model.Players;
 
 namespace CardGameFool.UI;
 
@@ -9,61 +14,73 @@ namespace CardGameFool.UI;
 /// </summary>
 public partial class MainWindow : Window
 {
+    private Dictionary<Player, PlayerCards> _playersPositions = new();
+
     public MainWindow()
     {
         InitializeComponent();
+    }
 
-        BotPlayer player = new("player1");
-        BotPlayer player1 = new("player2");
+    private void StartGame()
+    {
+        LivePlayer player1 = new("live player");
+        BotPlayer player2 = new("Bot");
+
+        player1.TakedСardsFromDeck += ShowPlayerCards;
+        player2.TakedСardsFromDeck += ShowPlayerCards;
+
+        _playersPositions.Add(player1, BottomPositionPlayerCards);
+        _playersPositions.Add(player2, TopPositionPlayerCards);
+
+        BottomPositionPlayerCards.CardsMouseDown += BottomPositionCards_MouseDown;
 
         Deck deck = new();
+        CardsDeck.TrumpCard = new CardUI(deck.TrumpCard);
 
-        Fool gameFool = new(player, player1, deck);
+        Fool gameFool = new(player1, player2, deck);
+        gameFool.IdentifiedFirstPlayer += ChangeActivePlayer;
+
+        GameResults gameResult = gameFool.StartGame();
+    }
+
+    private void ShowPlayerCards(Player player)
+    {
+        PlayerCards cardsUI = _playersPositions[player];
+
+        Card[] cards = player.Cards;
+
+        for (int i = 0; i < player.CardsCount; i++)
+        {
+            cardsUI.AddCard(new CardUI(cards[i]), i);
+        }
+    }
+
+    private void ChangeActivePlayer(Player player)
+    {
+        BottomPositionPlayerCards.IsActive = false;
+        TopPositionPlayerCards.IsActive = false;
+
+        _playersPositions[player].IsActive = true;
+    }
 
 
+    private void PauseButton_Click(object sender, RoutedEventArgs e)
+    {
+        StartGame();
+    }
 
-        CardsSlots.PutCard(new CardUI(deck.TrumpCard), 5, SlotsType.Attacking);
-        CardsSlots.PutCard(new CardUI(deck.TrumpCard), 5, SlotsType.Defense);
+    private void BottomPositionCards_MouseDown(object sender, MouseButtonEventArgs e)
+    {
+        if (!BottomPositionPlayerCards.IsActive)
+        {
+            return;
+        }
 
-        Player1Cards.AddCart(new CardUI(deck.TrumpCard), 0);
-        Player1Cards.AddCart(new CardUI(deck.TrumpCard), 1);
-        Player1Cards.AddCart(new CardUI(deck.TrumpCard), 2);
-        Player1Cards.AddCart(new CardUI(deck.TrumpCard), 3);
-        Player1Cards.AddCart(new CardUI(deck.TrumpCard), 4);
-        Player1Cards.AddCart(new CardUI(deck.TrumpCard), 5);
+        CardUI card = (CardUI)sender;
 
-        Player2Cards.AddCart(new CardUI(deck.TrumpCard) { Side = CardSides.Shirt }, 5);
-        Player2Cards.AddCart(new CardUI(deck.TrumpCard) { Side = CardSides.Shirt }, 4);
-        Player2Cards.AddCart(new CardUI(deck.TrumpCard) { Side = CardSides.Shirt }, 3);
-        Player2Cards.AddCart(new CardUI(deck.TrumpCard) { Side = CardSides.Shirt }, 2);
-        Player2Cards.AddCart(new CardUI(deck.TrumpCard) { Side = CardSides.Shirt }, 1);
-        Player2Cards.AddCart(new CardUI(deck.TrumpCard) { Side = CardSides.Shirt }, 0);
-        #region
-        //double offsetX = 10;
-        //double offsetY = 12;
+        BottomPositionPlayerCards.RemoveCard(card);
+        BottomPositionPlayerCards.IsActive = false;
 
-        //Random random = new();
-
-        //while (deck.Count > 0)
-        //{
-        //    CardUI cardUI = new(deck.GetTopCard())
-        //    {
-        //        HorizontalAlignment = HorizontalAlignment.Left,
-        //        VerticalAlignment = VerticalAlignment.Top,
-        //        Margin = new Thickness(offsetX, offsetY, 0, 0),
-        //        Side = (CardSides)random.Next(2),
-        //    };
-
-        //    Workspace.Children.Add(cardUI);
-
-        //    offsetX += 93;
-
-        //    if (offsetX == (93 * 9 + 10))
-        //    {
-        //        offsetX = 10;
-        //        offsetY += 120;
-        //    }
-        //}
-        #endregion
+        CardsSlots.PutCard(card, CardsSlots.LastFreeAttackingSlotIndex, SlotTypes.Attacking);
     }
 }

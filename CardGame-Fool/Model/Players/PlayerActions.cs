@@ -1,4 +1,4 @@
-﻿namespace CardGameFool.Model;
+﻿namespace CardGameFool.Model.Players;
 
 public enum PlayerActions
 {

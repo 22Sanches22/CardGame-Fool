@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Security.Policy;
+using System.Threading.Tasks;
+using CardGameFool.Model.Cards;
+using CardGameFool.Model.Players;
 
 namespace CardGameFool.Model;
 
@@ -22,6 +22,8 @@ public class Fool
         _deck = deck;
     }
 
+    public event Action<Player>? IdentifiedFirstPlayer;
+
     /// <returns> Winner or draw. </returns>
     public GameResults StartGame()
     {
@@ -35,9 +37,12 @@ public class Fool
 
         List<Card> cardsOnTable = new(Player.MaxCardsCount * 2);
 
+
         while (gameResult is null)
         {
             FirstPlayerMove();
+
+            return GameResults.WinnerPlayer1;
 
             PlayerActions chosenActionSecondPlayer = secondPlayer.WaitСhoiceAction();
 
@@ -59,7 +64,7 @@ public class Fool
                 continue;
             }
 
-            Card cardSecondPlayerToBeatCard = secondPlayer.WaitCardChoiceToBeatCard();
+            Card cardSecondPlayerToBeatCard = secondPlayer.AsyncWaitCardChoice().Result;
             secondPlayer.BeatCard(cardSecondPlayerToBeatCard);
 
             cardsOnTable.Clear();
@@ -78,10 +83,12 @@ public class Fool
 
         void FirstPlayerMove()
         {
-            Card cardToMakeMove = firstPlayer.WaitCardChoiceToMakeMove();
-            firstPlayer.MakeMove(cardToMakeMove);
+            //Task<Card> awaitedResult = firstPlayer.AsyncWaitCardChoice();
+            //Card cardToMakeMove = awaitedResult.Result;
+            return;
+            //firstPlayer.MakeMove(cardToMakeMove);
 
-            cardsOnTable.Add(cardToMakeMove);
+            //cardsOnTable.Add(cardToMakeMove);
         }
 
         // Determines the result of the game if the deck is empty. 
@@ -119,14 +126,20 @@ public class Fool
     /// <returns> The player make move first. </returns>
     private Player IdentifyFirstPlayer()
     {
-        Player? lowestTrumpPlayer = ComparePlayersTrumps();
+        Player? firstPlayer = ComparePlayersTrumps();
 
-        if (lowestTrumpPlayer is not null)
+        if (firstPlayer is not null)
         {
-            return lowestTrumpPlayer;
+            IdentifiedFirstPlayer?.Invoke(firstPlayer);
+
+            return firstPlayer;
         }
 
-        return ComparePlayersAllCards();
+        firstPlayer = ComparePlayersAllCards();
+
+        IdentifiedFirstPlayer?.Invoke(firstPlayer);
+
+        return firstPlayer;
 
 
         // Returns the player based on the results of the comparison trump cards.

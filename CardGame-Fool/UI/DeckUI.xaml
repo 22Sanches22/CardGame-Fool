@@ -1,4 +1,5 @@
-﻿<UserControl x:Class="CardGameFool.UI.DeckUI"
+﻿<UserControl x:Name="Workspace"
+             x:Class="CardGameFool.UI.DeckUI"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -6,17 +7,14 @@
              xmlns:local="clr-namespace:CardGameFool.UI"
              mc:Ignorable="d"
              Height="135"
-             Width="110"
-             x:Name="Workspace">
+             Width="110">
     <Canvas>
-        <local:CardUI x:Name="Trump"
-                      Canvas.Left="15"
-                      HorizontalAlignment="Left"
-                      VerticalAlignment="Center"/>
-        <local:CardUI x:Name="TopCard"
-                      Rotate="-90"
-                      Side="Shirt"
-                      Canvas.Top="40"
+        <local:CardUI x:Name="TrumpCardUI"
                       Canvas.Left="15"/>
+        <local:CardUI x:Name="TopCard"
+                      Canvas.Top="40"
+                      Canvas.Left="15"
+                      Rotate="-90"
+                      Side="Shirt"/>
     </Canvas>
 </UserControl>
