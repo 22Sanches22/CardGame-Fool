@@ -1,7 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 
 using CardGameFool.Model;
 using CardGameFool.Model.Cards;
@@ -14,48 +20,94 @@ namespace CardGameFool.UI;
 /// </summary>
 public partial class MainWindow : Window
 {
-    private Dictionary<Player, PlayerCards> _playersPositions = new();
+    private readonly LivePlayer livePlayer = new("Live player");
+    private readonly BotPlayer botPlayer = new("Bot player");
+
+    private readonly Deck deck = new();
+    private readonly Fool gameFool;
+
+    private readonly Dictionary<Player, PlayerCards> _playersPositions = new();
+    private readonly Dictionary<Button, PlayerActions> _livePlayerActionsButtons = new();
+
+    private readonly Dictionary<Button, string> _choiceButtonText = new();
+
+    private bool _isGameStarted = false;
 
     public MainWindow()
     {
         InitializeComponent();
-    }
+        
+        SubscribeGeneralPlayersEvents(livePlayer);
+        livePlayer.WaitingActionChoiceHandler += LivePlayer_HandleWaitingActionChoice;
 
-    private void StartGame()
-    {
-        LivePlayer player1 = new("live player");
-        BotPlayer player2 = new("Bot");
+        SubscribeGeneralPlayersEvents(botPlayer);
 
-        player1.TakedСardsFromDeck += ShowPlayerCards;
-        player2.TakedСardsFromDeck += ShowPlayerCards;
+        gameFool = new Fool(livePlayer, botPlayer, deck);
+        SubscribeFoolEvents();
 
-        _playersPositions.Add(player1, BottomPositionPlayerCards);
-        _playersPositions.Add(player2, TopPositionPlayerCards);
+        _playersPositions.Add(livePlayer, BottomPositionPlayerCards);
+        _playersPositions.Add(botPlayer, TopPositionPlayerCards);
+
+        _livePlayerActionsButtons.Add(MakeMoveButton, PlayerActions.MakeMove);
+        _livePlayerActionsButtons.Add(DiscardCardsButton, PlayerActions.DiscardCards);
+        _livePlayerActionsButtons.Add(BeatCardButton, PlayerActions.BeatCard);
+        _livePlayerActionsButtons.Add(TakeCardButton, PlayerActions.TakeCard);
+
+        _choiceButtonText.Add(MakeMoveButton, "Make move");
+        _choiceButtonText.Add(DiscardCardsButton, "Discard cards");
+        _choiceButtonText.Add(BeatCardButton, "Beat card");
+        _choiceButtonText.Add(TakeCardButton, "Take card");
 
         BottomPositionPlayerCards.CardsMouseDown += BottomPositionCards_MouseDown;
-
-        Deck deck = new();
-        CardsDeck.TrumpCard = new CardUI(deck.TrumpCard);
-
-        Fool gameFool = new(player1, player2, deck);
-        gameFool.IdentifiedFirstPlayer += ChangeActivePlayer;
-
-        GameResults gameResult = gameFool.StartGame();
     }
 
-    private void ShowPlayerCards(Player player)
+    private void SubscribeGeneralPlayersEvents(Player player)
     {
-        PlayerCards cardsUI = _playersPositions[player];
-
-        Card[] cards = player.Cards;
-
-        for (int i = 0; i < player.CardsCount; i++)
-        {
-            cardsUI.AddCard(new CardUI(cards[i]), i);
-        }
+        player.TakedCards += Player_TakedCards;
+        player.MakeMoved += Player_UsePlayerCard;
+        player.BeatedCard += Player_UsePlayerCard;
     }
 
-    private void ChangeActivePlayer(Player player)
+    private void SubscribeFoolEvents()
+    {
+        gameFool.ChangedFirstPlayer += Fool_ChangeActivePlayer;
+        gameFool.ClearedСardsOnTable += CardsSlots.Clear;
+        gameFool.AddingСardsOnTable += Fool_PutСardInSlot;
+    }
+
+    private async void StartGame()
+    {
+        CardsDeck.Trump = new CardUI(deck.TrumpCard);
+
+        var result = await gameFool.AsyncStartGame();
+        MessageBox.Show(result.ToString());
+    }
+
+    private void Player_TakedCards(Player player, IEnumerable<Card> addedCards)
+    {
+        foreach (Card card in addedCards)
+        {
+            _playersPositions[player].Add(new CardUI(card));
+        }
+
+        int slideIndex = _playersPositions[player].Count / Player.DefaultCardsCount - 1;
+        _playersPositions[player].ShowCards(slideIndex);
+    }
+
+    private void Player_UsePlayerCard(Player player, Card card)
+    {
+        _playersPositions[player].Remove(card);
+    }
+
+    private void LivePlayer_HandleWaitingActionChoice(bool isStartHandling)
+    {
+        MakeMoveButton.IsEnabled = isStartHandling;
+        DiscardCardsButton.IsEnabled = isStartHandling;
+        BeatCardButton.IsEnabled = isStartHandling;
+        TakeCardButton.IsEnabled = isStartHandling;
+    }
+
+    private void Fool_ChangeActivePlayer(Player player)
     {
         BottomPositionPlayerCards.IsActive = false;
         TopPositionPlayerCards.IsActive = false;
@@ -63,24 +115,57 @@ public partial class MainWindow : Window
         _playersPositions[player].IsActive = true;
     }
 
+    private void Fool_PutСardInSlot(Card card, PlayerActions action)
+    {
+        if (action == PlayerActions.MakeMove)
+        {
+            CardsSlots.Put(new CardUI(card), CardsSlots.LastFreeAttackingSlotIndex, SlotTypes.Attacking);
+
+            return;
+        }
+        else if (action == PlayerActions.BeatCard)
+        {
+            CardsSlots.Put(new CardUI(card), CardsSlots.LastFreeDefenseSlotIndex, SlotTypes.Defense);
+
+            return;
+        }
+
+        throw new InvalidOperationException("Incorrect action in this context.");
+    }
 
     private void PauseButton_Click(object sender, RoutedEventArgs e)
     {
-        StartGame();
-    }
-
-    private void BottomPositionCards_MouseDown(object sender, MouseButtonEventArgs e)
-    {
-        if (!BottomPositionPlayerCards.IsActive)
+        if (_isGameStarted)
         {
             return;
         }
 
-        CardUI card = (CardUI)sender;
+        _isGameStarted = true;
 
-        BottomPositionPlayerCards.RemoveCard(card);
-        BottomPositionPlayerCards.IsActive = false;
+        StartGame(); 
+    }
 
-        CardsSlots.PutCard(card, CardsSlots.LastFreeAttackingSlotIndex, SlotTypes.Attacking);
+    private void BottomPositionCards_MouseDown(object sender, MouseButtonEventArgs e)
+    {
+        livePlayer.SetChosenCard(((CardUI)sender).Card);
+    }
+
+    private void ChoosingAction_Click(object sender, RoutedEventArgs e)
+    {
+        livePlayer.SetChosenAction(_livePlayerActionsButtons[(Button)sender]);
+    }
+
+    private void ChoiceButton_MouseEnter(object sender, MouseEventArgs e)
+    {
+        ChoiceButtonToolTipBorder.BorderBrush = (SolidColorBrush?)new BrushConverter().ConvertFrom("#d43256");
+        ChoiceButtonToolTipText.Foreground = (SolidColorBrush?)new BrushConverter().ConvertFrom("#fe9593");
+        ChoiceButtonToolTipText.Text = $"{_choiceButtonText[(Button)sender]}";
+    }
+
+    private void ChoiceButton_MouseLeave(object sender, MouseEventArgs e)
+    {
+        ChoiceButtonToolTipBorder.BorderBrush = (SolidColorBrush?)new BrushConverter().ConvertFrom("#FF611627");
+        ChoiceButtonToolTipText.Foreground = (SolidColorBrush?)new BrushConverter().ConvertFrom("#FF734444");
+        ChoiceButtonToolTipText.Text = "...";
     }
 }

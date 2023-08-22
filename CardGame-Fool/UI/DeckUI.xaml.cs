@@ -16,13 +16,15 @@ public partial class DeckUI : UserControl
         InitializeComponent();
     }
 
-    public CardUI TrumpCard
+    public CardUI Trump
     {
-        get => TrumpCardUI;
+        get => TrumpCard;
         set
         {
-            TrumpCardUI.Rank = value.Rank;
-            TrumpCardUI.Suit = value.Suit;
+            TrumpCard.RankVisual = value.RankVisual;
+            TrumpCard.SuitVisual = value.SuitVisual;
+
+            SuitTextBlock.Text = CardUI.SuitSymbols[value.SuitVisual];
         }
     }
 
@@ -35,20 +37,20 @@ public partial class DeckUI : UserControl
 
             if (value < 1)
             {
-                Workspace.Visibility = Visibility.Hidden;
-                return;
+                TopCard.Visibility = Visibility.Hidden;
+                TrumpCard.Visibility = Visibility.Hidden;
             }
             else if (value < 2)
             {
                 TopCard.Visibility = Visibility.Hidden;
-                
+                TrumpCard.Visibility = Visibility.Visible;
+
             }
             else if (value > 1)
             {
                 TopCard.Visibility = Visibility.Visible;
+                TrumpCard.Visibility = Visibility.Visible;
             }
-
-            Workspace.Visibility = Visibility.Visible;
         }
     }
 }

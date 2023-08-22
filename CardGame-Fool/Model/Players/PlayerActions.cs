@@ -4,5 +4,6 @@ public enum PlayerActions
 {
     MakeMove,
     BeatCard,
-    TakeCards
+    TakeCard,
+    DiscardCards
 }

@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 
 namespace CardGameFool.UI;
 
@@ -25,7 +27,7 @@ public partial class Slots : UserControl
     {
         get
         {
-            return FindFirstFreeIndex(_attackingCards);
+            return Array.IndexOf(_attackingCards, null);
         }
     }
 
@@ -34,11 +36,11 @@ public partial class Slots : UserControl
     {
         get
         {
-            return FindFirstFreeIndex(_defenseCards);
+            return Array.IndexOf(_defenseCards, null);
         }
     }
 
-    public void PutCard(CardUI card, int slotIndex, SlotTypes slotType)
+    public void Put(CardUI card, int slotIndex, SlotTypes slotType)
     {
         if (slotIndex < 0 || slotIndex > _slotCount - 1)
         {
@@ -75,13 +77,15 @@ public partial class Slots : UserControl
             card.Rotate = angle;
         }
 
+        card.Cursor = Cursors.Arrow;
+
         Canvas.SetLeft(card, leftPos);
         Canvas.SetTop(card, topPos);
 
         WorkspaceCanvas.Children.Add(card);
     }
 
-    public void RemoveCard(int slotIndex, SlotTypes slotType)
+    public void Remove(int slotIndex, SlotTypes slotType)
     {
         if (slotType == SlotTypes.Attacking)
         {
@@ -111,16 +115,19 @@ public partial class Slots : UserControl
         }
     }
 
-    private static int FindFirstFreeIndex(CardUI?[] collection)
+    public void Clear()
     {
         for (int i = 0; i < _slotCount; i++)
         {
-            if (collection[i] is null)
+            if (_defenseCards[i] is not null)
             {
-                return i;
+                Remove(i, SlotTypes.Defense);
             }
-        }
 
-        return -1;
+            if (_attackingCards[i] is not null)
+            {
+                Remove(i, SlotTypes.Attacking);
+            }
+        }        
     }
 }

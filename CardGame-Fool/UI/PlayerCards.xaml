@@ -14,13 +14,42 @@
             <Setter Property="Canvas.Left"
                     Value="85"/>
         </Style>
+
+        <Style x:Key="SlideButton"
+               TargetType="Button"
+               BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Width"
+                    Value="30"/>
+            <Setter Property="Height"
+                    Value="30"/>
+            <Setter Property="BorderThickness"
+                    Value="1"/>
+            <Setter Property="FontSize"
+                    Value="22"/>
+            <Setter Property="Padding"
+                    Value="0,-1.1,0,0"/>
+        </Style>
     </UserControl.Resources>
 
-    <Canvas x:Name="WorkspaceCanvas">
+    <Canvas>
         <Rectangle x:Name="SatusBar"
                    Canvas.Top="159"
                    Width="250"
                    Height="5"/>
-    </Canvas>
 
+        <Button Canvas.Left="220"
+                Canvas.Top="129"
+                Style="{StaticResource SlideButton}"
+                Content="▷"
+                Click="NextSlideButton_Click"/>
+        <Button Canvas.Left="0"
+                Canvas.Top="129"
+                Style="{StaticResource SlideButton}"
+                Content="◁"
+                Click="PreviousSlideButton_Click"/>
+
+        <Canvas x:Name="WorkspaceCanvas"
+                Width="250"
+                Height="164"/>
+    </Canvas>
 </UserControl>

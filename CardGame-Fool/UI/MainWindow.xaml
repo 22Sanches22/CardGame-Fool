@@ -34,25 +34,30 @@
                       Canvas.Top="182"
                       Canvas.Left="14"/>
 
-        <local:PlayerCards x:Name="BottomPositionPlayerCards"
-                           Canvas.Left="300"
-                           Canvas.Top="336"
-                           IsActive="True"/>
         <local:PlayerCards x:Name="TopPositionPlayerCards"
                            Canvas.Left="300"
                            RenderTransformOrigin="0.5,0.5"
-                           IsHidden="True">
+                           IsHidden="True"
+                           IsActive="False">
             <local:PlayerCards.RenderTransform>
                 <RotateTransform Angle="180"/>
             </local:PlayerCards.RenderTransform>
         </local:PlayerCards>
+        <local:PlayerCards x:Name="BottomPositionPlayerCards"
+                           Canvas.Left="300"
+                           Canvas.Top="336"
+                           IsActive="True"/>
 
         <local:Slots x:Name="CardsSlots"
                      Canvas.Left="194"
                      Canvas.Top="176"/>
+
         <Button Canvas.Left="815"
                 Canvas.Top="5"
-                Style="{DynamicResource PauseButtonStyle}"
+                Width="30"
+                Height="30"
+                HorizontalContentAlignment="Left"
+                VerticalContentAlignment="Top"
                 Click="PauseButton_Click">
             <Canvas>
                 <Line Stroke="#fe9593"
@@ -69,5 +74,98 @@
                   Y2="20"/>
             </Canvas>
         </Button>
+
+        <Border x:Name="ChoiceButtonToolTipBorder"
+                Canvas.Left="640"
+                Canvas.Top="378"
+                Width="205"
+                Height="20"
+                BorderThickness="2"
+                BorderBrush="#FF611627">
+            <TextBlock x:Name="ChoiceButtonToolTipText" Text="..."
+                       TextAlignment="Center"
+                       FontSize="15"
+                       FontFamily="Bahnschrift SemiLight SemiCondensed"
+                       Foreground="#FF734444"
+                       VerticalAlignment="Center"
+                       Padding="0,2,0,0"/>
+        </Border>
+
+        <Button x:Name="MakeMoveButton"
+                Canvas.Left="640"
+                Canvas.Top="400"
+                Content="👣"
+                IsEnabled="False"
+                Click="ChoosingAction_Click"
+                MouseEnter="ChoiceButton_MouseEnter"
+                MouseLeave="ChoiceButton_MouseLeave"/>
+        <Button x:Name="DiscardCardsButton"
+                Canvas.Left="745"
+                Canvas.Top="400"
+                Content="🙌"
+                IsEnabled="False"
+                Click="ChoosingAction_Click"
+                MouseEnter="ChoiceButton_MouseEnter"
+                MouseLeave="ChoiceButton_MouseLeave"/>
+        <Button x:Name="BeatCardButton"
+                Canvas.Left="640"
+                Canvas.Top="450"
+                Content="👊"
+                Padding="0,-3.5,0,0"
+                IsEnabled="False"
+                Click="ChoosingAction_Click"      
+                MouseEnter="ChoiceButton_MouseEnter"
+                MouseLeave="ChoiceButton_MouseLeave"/>
+        <Button x:Name="TakeCardButton"
+                Canvas.Left="745"
+                Canvas.Top="450"
+                Content="🖐"
+                Padding="0,2,0,0"
+                IsEnabled="False"
+                Click="ChoosingAction_Click"
+                MouseEnter="ChoiceButton_MouseEnter"
+                MouseLeave="ChoiceButton_MouseLeave"/>
+
+        <Border Canvas.Left="739"
+                Canvas.Top="400"
+                Width="7"
+                Height="95"
+                BorderThickness="1,2,1,2"
+                BorderBrush="#FFD43256">
+            <Border.Background>
+                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                    <GradientStop Color="#66D43256"/>
+                    <GradientStop Color="#33D43256" Offset="0.25"/>
+                    <GradientStop Color="#66D43256" Offset="0.4"/>
+                    <GradientStop Color="#19D43256" Offset="0.5"/>
+                    <GradientStop Color="#66D43256" Offset="0.6"/>
+                    <GradientStop Color="#33D43256" Offset="0.75"/>
+                    <GradientStop Color="#66D43256" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
+        </Border>
+        <Border Canvas.Left="640"
+                Canvas.Top="444"
+                Width="205"
+                Height="7"
+                BorderThickness="2,1,2,1"
+                BorderBrush="#FFD43256" HorizontalAlignment="Left" VerticalAlignment="Center">
+            <Border.Background>
+                <LinearGradientBrush>
+                    <GradientStop Color="#66D43256" Offset="0"/>
+                    <GradientStop Color="#33D43256" Offset="0.2"/>
+                    <GradientStop Color="#66D43256" Offset="0.3"/>
+                    <GradientStop Color="#33D43256" Offset="0.4"/>
+                    <GradientStop Color="#66D43256" Offset="0.45"/>
+                    <GradientStop Color="#19D43256" Offset="0.5"/>
+                    <GradientStop Color="#66D43256" Offset="0.55"/>
+                    <GradientStop Color="#33D43256" Offset="0.6"/>
+                    <GradientStop Color="#66D43256" Offset="0.7"/>
+                    <GradientStop Color="#33D43256" Offset="0.8"/>
+                    <GradientStop Color="#66D43256" Offset="0.9"/>
+                    <GradientStop Color="#33D43256" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
+        </Border>
     </Canvas>
 </Window>

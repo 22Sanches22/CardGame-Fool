@@ -7,42 +7,18 @@ namespace CardGameFool.Model.Players;
 
 public class BotPlayer : Player
 {
-    public BotPlayer(string name) : base(name, PlayerTypes.Bot)
+    public BotPlayer(string name) : base(name)
     { }
 
-    public override event Action? MakeMoved;
-    public override event Action? BeatedCard;
-
-    public override void MakeMove(Card card)
+    public override async Task<Card> AsyncWaitChoiceCard()
     {
-        if (!_cards.Contains(card))
-        {
-            throw new ArgumentException("The requested card is not in the player's hand.");
-        }
-
-        _cards.Remove(card);
-
-        MakeMoved?.Invoke();
+        await Task.Delay(1);
+        return _cards[0];
     }
 
-    public override void BeatCard(Card card)
+    public override async Task<PlayerActions> AsyncWaitActionСhoice(PlayerActions[] allowedActions)
     {
-        if (!_cards.Contains(card))
-        {
-            throw new ArgumentException("The requested card is not in the player's hand.");
-        }
-
-        _cards.Remove(card);
-
-        BeatedCard?.Invoke();
-    }
-
-    public override async Task<Card> AsyncWaitCardChoice()
-    {
-        Card returnCard = new Card();
-
-        _chosenCard = null;
-
-        return returnCard;
+        await Task.Delay(1);
+        return allowedActions[0];
     }
 }

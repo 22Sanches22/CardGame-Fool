@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 
+using CardGameFool.Model.Cards;
 using CardGameFool.Model.Players;
 
 namespace CardGameFool.UI;
@@ -14,15 +15,19 @@ namespace CardGameFool.UI;
 /// </summary>
 public partial class PlayerCards : UserControl
 {
+    private const int _slideCount = Deck.MaxCardsCount / Player.DefaultCardsCount;
+
     private static readonly int[] _angles = { -65, -40, -15, 15, 40, 65 };
     private static readonly Point _transformOrigin = new(0.5, 1);
 
     private static readonly Brush? _satusBarBrush = (SolidColorBrush?)new BrushConverter().ConvertFrom("#d43256");
 
-    private readonly CardUI?[] _cards = new CardUI[Player.MaxCardsCount];
+    private readonly CardUI?[] _cardsUI = new CardUI[Deck.MaxCardsCount];
 
     private bool _isHidden = false;
     private bool _isActive = false;
+
+    private int _currentSlideIndex = 0;
 
     private MouseButtonEventHandler? _cardsMouseDown;
 
@@ -35,17 +40,19 @@ public partial class PlayerCards : UserControl
     {
         add
         {
-            DoToAllCards((card) => card.MouseDown += value);
+            DoToAllCards((cardUI) => cardUI.MouseDown += value);
 
-            _cardsMouseDown = value;
+            _cardsMouseDown += value;
         }
         remove
         {
-            DoToAllCards((card) => card.MouseDown -= value);
+            DoToAllCards((cardUI) => cardUI.MouseDown -= value);
 
-            _cardsMouseDown = null;
+            _cardsMouseDown -= value;
         }
     }
+
+    public int Count { get; private set; }
 
     public bool IsHidden
     {
@@ -56,11 +63,11 @@ public partial class PlayerCards : UserControl
 
             if (value)
             {
-                DoToAllCards((card) => card.Side = CardSides.Shirt);
+                DoToAllCards((cardUI) => cardUI.Side = CardSides.Shirt);
             }
             else
             {
-                DoToAllCards((card) => card.Side = CardSides.Face);
+                DoToAllCards((cardUI) => cardUI.Side = CardSides.Face);
             }
         }
     }
@@ -78,7 +85,7 @@ public partial class PlayerCards : UserControl
                 
                 if (!IsHidden)
                 {
-                    DoToAllCards((card) => card.Cursor = Cursors.Hand);
+                    DoToAllCards((cardUI) => cardUI.Cursor = Cursors.Hand);
                 }
                 
             }
@@ -86,81 +93,146 @@ public partial class PlayerCards : UserControl
             {
                 SatusBar.Fill = null;
 
-                DoToAllCards((card) => card.Cursor = Cursors.Arrow);
+                DoToAllCards((cardUI) => cardUI.Cursor = Cursors.Arrow);
             }
         }
     }
 
-    public void AddCard(CardUI card, int positionIndex)
+    public void Add(CardUI cardUI)
     {
-        if (positionIndex < 0 || positionIndex > Player.MaxCardsCount - 1)
-        {
-            throw new ArgumentException($"The index entered is greater than the maximum available" +
-                $"({_cards.Length - 1}) or less than zero.");
-        }
+        cardUI.RenderTransformOrigin = _transformOrigin;
 
-        if (_cards[positionIndex] is not null)
-        {
-            throw new InvalidOperationException("There is already a card in this position.");
-        }
-
-        card.Rotate = _angles[positionIndex];
-        card.RenderTransformOrigin = _transformOrigin;
-
-        _cards[positionIndex] = card;
-
-        WorkspaceCanvas.Children.Add(card);
+        _cardsUI[FindFreeIndex()] = cardUI;
+        Count++;
 
         if (_isHidden)
         {
-            card.Side = CardSides.Shirt;
+            cardUI.Side = CardSides.Shirt;
         }
         else
         {
-            card.Cursor = Cursors.Hand;
+            cardUI.Cursor = Cursors.Hand;
 
             if (_cardsMouseDown is not null)
             {
-                card.MouseDown += _cardsMouseDown;
-            }         
+                cardUI.MouseDown += _cardsMouseDown;
+            }
         }
     }
 
-    public void RemoveCard(int positionIndex)
+    public void Remove(CardUI cardUI)
     {
-        if (positionIndex < 0 || positionIndex > _cards.Length - 1)
-        {
-            throw new ArgumentException($"The entered index is larger than the available one or less than zero.");
-        }
-
-        if (_cards[positionIndex] is null)
-        {
-            throw new InvalidOperationException("There is no card in this position.");
-        }
-
-        WorkspaceCanvas.Children.Remove(_cards[positionIndex]);
-
-        _cards[positionIndex] = null;
-    }
-
-    public void RemoveCard(CardUI card)
-    {
-        if (!_cards.Contains(card))
+        if (!_cardsUI.Contains(cardUI))
         {
             throw new InvalidOperationException("This card is not on the list.");
         }
 
-        RemoveCard(Array.IndexOf(_cards, card));
+        Count--;
+
+        if (_cardsMouseDown is not null)
+        {
+            cardUI.MouseDown -= _cardsMouseDown;
+        }
+
+        WorkspaceCanvas.Children.Remove(cardUI);
+        _cardsUI[Array.IndexOf(_cardsUI, cardUI)] = null;
+    }
+
+    public void Remove(Card card)
+    {
+        foreach (CardUI? cardUI in _cardsUI)
+        {
+            if (cardUI is not null && cardUI.Card.Equals(card))
+            {
+                Remove(cardUI);
+
+                return;
+            }
+        }
+
+        throw new InvalidOperationException("There is no match for this card in the array.");
+    }
+
+    public void ShowCards(int slideIndex)
+    {
+        if (slideIndex < 0 || slideIndex > _slideCount)
+        {
+            throw new ArgumentException(
+                $"The entered slide index is less than 0 or exceeds the maximum allowable: {_slideCount}.");
+        }
+
+        int startIndex = slideIndex * Player.DefaultCardsCount;
+
+        if (_cardsUI[startIndex] is null)
+        {
+            return;
+        }
+
+        _currentSlideIndex = slideIndex;
+
+        WorkspaceCanvas.Children.Clear();
+
+        Array.Sort(_cardsUI);
+        // The function Array.Sort() moves all the null elements forward.
+        Array.Reverse(_cardsUI);
+
+        for (int i = startIndex; i < (startIndex + Player.DefaultCardsCount); i++)
+        {
+            CardUI? cardUI = _cardsUI[i];
+
+            if (cardUI is not null)
+            {
+                cardUI.Rotate = GetAngleByPosition(i);
+
+                WorkspaceCanvas.Children.Add(cardUI);
+            }   
+        }
+    }
+
+    private static int GetAngleByPosition(int cardPositionIndex)
+    {
+        return _angles[cardPositionIndex % _angles.Length];
     }
 
     private void DoToAllCards(Action<CardUI> action)
     {
-        foreach (CardUI? card in _cards)
+        foreach (CardUI? cardUI in _cardsUI)
         {
-            if (card is not null)
+            if (cardUI is null)
             {
-                action(card);
-            }  
+                return;
+            }
+
+            action(cardUI);
+        }
+    }
+
+    private int FindFreeIndex()
+    {
+        for (int i = 0; i < _cardsUI.Length; i++)
+        {
+            if (_cardsUI[i] is null)
+            {
+                return i;
+            }
+        }
+
+        throw new InvalidOperationException("There is no free index.");
+    }
+
+    private void NextSlideButton_Click(object sender, RoutedEventArgs e)
+    {
+        if ((_currentSlideIndex + 1) < _slideCount)
+        {
+            ShowCards(_currentSlideIndex + 1);
+        }
+    }
+
+    private void PreviousSlideButton_Click(object sender, RoutedEventArgs e)
+    {
+        if ((_currentSlideIndex - 1) > -1)
+        {
+            ShowCards(_currentSlideIndex - 1);
         }
     }
 }

@@ -9,7 +9,22 @@
              Height="135"
              Width="110">
     <Canvas>
-        <local:CardUI x:Name="TrumpCardUI"
+        <TextBlock x:Name="SuitTextBlock"
+                   Canvas.Left="15"
+                   Canvas.Top="14"
+                   Text="♠"
+                   FontSize="80"
+                   Foreground="#f68741"
+                   FontFamily="Yu Gothic UI Semibold">
+            <TextBlock.Effect>
+                <DropShadowEffect Color="#f68741"
+                                      Direction="0"
+                                      ShadowDepth="0"
+                                      BlurRadius="10"/>
+            </TextBlock.Effect>
+
+        </TextBlock>
+        <local:CardUI x:Name="TrumpCard"
                       Canvas.Left="15"/>
         <local:CardUI x:Name="TopCard"
                       Canvas.Top="40"

@@ -3,26 +3,30 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              StartupUri="UI/MainWindow.xaml">
     <Application.Resources>
-        <SolidColorBrush x:Key="Button.Static.Background" Color="Transparent"/>
+        <SolidColorBrush x:Key="Button.Static.Background" Color="#33D43256"/>
         <SolidColorBrush x:Key="Button.Static.Border" Color="#d43256"/>
+        <SolidColorBrush x:Key="Button.Static.Foreground" Color="#fe9593"/>
         <SolidColorBrush x:Key="Button.MouseOver.Background" Color="#7FFE9593"/>
         <SolidColorBrush x:Key="Button.MouseOver.Border" Color="#fe9593"/>
         <SolidColorBrush x:Key="Button.Pressed.Background" Color="#99FE9593"/>
         <SolidColorBrush x:Key="Button.Pressed.Border" Color="#fe9593"/>
-        <SolidColorBrush x:Key="Button.Disabled.Background" Color="#FFF4F4F4"/>
-        <SolidColorBrush x:Key="Button.Disabled.Border" Color="#FFADB2B5"/>
-        <SolidColorBrush x:Key="Button.Disabled.Foreground" Color="#FF838383"/>
-        
-        <Style x:Key="PauseButtonStyle" TargetType="{x:Type Button}"> 
-            <Setter Property="Width" Value="30"/>
-            <Setter Property="Height" Value="30"/>
+        <SolidColorBrush x:Key="Button.Disabled.Background" Color="#33711C2F"/>
+        <SolidColorBrush x:Key="Button.Disabled.Border" Color="#FF611627"/>
+        <SolidColorBrush x:Key="Button.Disabled.Foreground" Color="#FF734444"/>
+
+        <Style TargetType="{x:Type Button}">
+            <Setter Property="Width" Value="100"/>
+            <Setter Property="Height" Value="45"/>
             <Setter Property="Background" Value="{StaticResource Button.Static.Background}"/>
             <Setter Property="BorderBrush" Value="{StaticResource Button.Static.Border}"/>
-            <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
+            <Setter Property="Foreground" Value="{StaticResource Button.Static.Foreground}"/>
             <Setter Property="BorderThickness" Value="2"/>
-            <Setter Property="HorizontalContentAlignment" Value="Left"/>
-            <Setter Property="VerticalContentAlignment" Value="Top"/>
             <Setter Property="Padding" Value="0,0,0,0"/>
+            <Setter Property="FontSize" Value="30"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontFamily" Value="Gabriola"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type Button}">

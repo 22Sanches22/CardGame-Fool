@@ -6,15 +6,17 @@ using System.Windows.Media.Effects;
 using System.Windows.Shapes;
 using CardGameFool.Model.Cards;
 using CardGameFool.Model;
+using System;
+using System.Runtime.ConstrainedExecution;
 
 namespace CardGameFool.UI;
 
 /// <summary>
 /// Логика взаимодействия для CardUI.xaml
 /// </summary>
-public partial class CardUI : UserControl
+public partial class CardUI : UserControl, IComparable
 {
-    private static readonly Dictionary<Suits, string> suitSymbols = new()
+    public static readonly Dictionary<Suits, string> SuitSymbols = new()
     {
         [Suits.Spades] = "♠",
         [Suits.Diamonds] = "♦",
@@ -22,8 +24,7 @@ public partial class CardUI : UserControl
         [Suits.Hearts] = "♥"
     };
 
-    private Ranks _rank;
-    private Suits _suit;
+    private readonly Card _card;
 
     private CardSides _side;
 
@@ -34,34 +35,31 @@ public partial class CardUI : UserControl
         GenerateShirt();
     }
 
-    public CardUI(Ranks rank, Suits suit) : this()
+    public CardUI(Card card) : this()
     {
-        Rank = rank;
-        Suit = suit;
+        _card = card;
+
+        RankVisual = card.Rank;
+        SuitVisual = card.Suit;
     }
 
-    public CardUI(Card card) : this(card.Rank, card.Suit)
-    {}
+    public Card Card => _card;
 
-    public Ranks Rank
+    public Ranks RankVisual
     {
-        get => _rank;
+        get => _card.Rank;
         set
         {
-            _rank = value;
-
-            Resources["RankText"] = $"{(_rank < Ranks.Jack ? ((int)value).ToString() : value.ToString()[0])}";
+            Resources["RankText"] = $"{(value < Ranks.Jack ? ((int)value).ToString() : value.ToString()[0])}";
         }
     }
 
-    public Suits Suit
+    public Suits SuitVisual
     {
-        get => _suit;
+        get => _card.Suit;
         set
         {
-            _suit = value;
-
-            Resources["SuitText"] = suitSymbols[value];
+            Resources["SuitText"] = SuitSymbols[value];
         }
     }
 
@@ -94,6 +92,17 @@ public partial class CardUI : UserControl
         }
     }
 
+    public int CompareTo(object? obj)
+    {
+        if (obj is null)
+        {
+            return -1;
+        }
+
+        CardUI cardUI = (CardUI)obj;
+        return cardUI.Card.CompareTo(_card);
+    }
+
     private void GenerateShirt()
     {
         const int interval = 15;
@@ -118,9 +127,9 @@ public partial class CardUI : UserControl
         CreateLines(interval - angle, 0, Height, -heightIncrease, 1, Width);
 
 
-        void CreateLines(int i, int maxI, double y1, double y2, double renderPointY = 0, double leftOffset = 0)
+        void CreateLines(int i, int limit, double y1, double y2, double renderPointY = 0, double leftOffset = 0)
         {
-            for (int j = i; j < maxI; j += interval)
+            for (int j = i; j < limit; j += interval)
             {
                 Line line = new()
                 {

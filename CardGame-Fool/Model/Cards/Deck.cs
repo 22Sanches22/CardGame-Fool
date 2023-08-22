@@ -30,7 +30,7 @@ namespace CardGameFool.Model.Cards
 
         public Card TrumpCard => _cards[^1];
 
-        /// <returns> The first of card in deck. </returns>
+        /// <returns> The first card to the deck and removes it. </returns>
         public Card GetTopCard()
         {
             if (Count < 1)
@@ -39,7 +39,6 @@ namespace CardGameFool.Model.Cards
             }
 
             Card topCard = _cards[0];
-
             _cards.Remove(topCard);
 
             return topCard;

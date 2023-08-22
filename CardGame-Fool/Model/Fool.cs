@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using System.Windows;
 using CardGameFool.Model.Cards;
 using CardGameFool.Model.Players;
 
@@ -22,52 +24,70 @@ public class Fool
         _deck = deck;
     }
 
-    public event Action<Player>? IdentifiedFirstPlayer;
+    public event Action<Player>? ChangedFirstPlayer;
+
+    public event Action<Card, PlayerActions>? AddingСardsOnTable;
+    public event Action? ClearedСardsOnTable;
 
     /// <returns> Winner or draw. </returns>
-    public GameResults StartGame()
+    public async Task<GameResults> AsyncStartGame()
     {
-        _player1.TakeСardsFromDeck(_deck, Player.MaxCardsCount);
-        _player2.TakeСardsFromDeck(_deck, Player.MaxCardsCount);
+        _player1.TakeСardsFromDeck(_deck, Player.DefaultCardsCount);
+        _player1.TakeСardsFromDeck(_deck, Player.DefaultCardsCount);
+        _player1.TakeСardsFromDeck(_deck, Player.DefaultCardsCount);
+        _player2.TakeСardsFromDeck(_deck, Player.DefaultCardsCount);
+        _player2.TakeСardsFromDeck(_deck, Player.DefaultCardsCount);
+        _player2.TakeСardsFromDeck(_deck, Player.DefaultCardsCount);
 
-        Player firstPlayer = IdentifyFirstPlayer();
+        Player firstPlayer = _player1;// IdentifyFirstPlayer();
         Player secondPlayer = (firstPlayer == _player1) ? _player2 : _player1;
+
+        PlayerActions[] allowedActionsToFirstPlayer = new[] { PlayerActions.MakeMove, PlayerActions.DiscardCards };
+        PlayerActions[] allowedActionsToSecondPlayer = new[] { PlayerActions.BeatCard, PlayerActions.TakeCard };
 
         GameResults? gameResult = null;
 
-        List<Card> cardsOnTable = new(Player.MaxCardsCount * 2);
-
+        List<Card> cardsOnTable = new(Player.DefaultCardsCount * 2);
 
         while (gameResult is null)
         {
-            FirstPlayerMove();
+            await PerformActionWithCard(firstPlayer, PlayerActions.MakeMove);
 
-            return GameResults.WinnerPlayer1;
+            PlayerActions chosenActionSecondPlayer =
+                await secondPlayer.AsyncWaitActionСhoice(allowedActionsToSecondPlayer);
 
-            PlayerActions chosenActionSecondPlayer = secondPlayer.WaitСhoiceAction();
-
-            if (chosenActionSecondPlayer == PlayerActions.TakeCards)
+            if (!allowedActionsToSecondPlayer.Contains(chosenActionSecondPlayer))
+            {
+                throw new InvalidOperationException("Incorrect action in this context.");
+            }
+            else if (chosenActionSecondPlayer == PlayerActions.TakeCard)
             {
                 secondPlayer.TakeCards(cardsOnTable);
 
-                PlayerActions chosenActionFirstPlayer = firstPlayer.WaitСhoiceAction();
-
-                while (chosenActionFirstPlayer == PlayerActions.MakeMove)
-                {
-                    FirstPlayerMove();
-
-                    chosenActionFirstPlayer = firstPlayer.WaitСhoiceAction();
-                }
+                cardsOnTable.Clear();
+                ClearedСardsOnTable?.Invoke();
 
                 TryDetermineGameResult();
 
                 continue;
             }
 
-            Card cardSecondPlayerToBeatCard = secondPlayer.AsyncWaitCardChoice().Result;
-            secondPlayer.BeatCard(cardSecondPlayerToBeatCard);
+            await PerformActionWithCard(secondPlayer, PlayerActions.BeatCard);
+
+            PlayerActions chosenActionFirstPlayer =
+                await firstPlayer.AsyncWaitActionСhoice(allowedActionsToFirstPlayer);
+
+            if (!allowedActionsToFirstPlayer.Contains(chosenActionFirstPlayer))
+            {
+                throw new InvalidOperationException("Incorrect action in this context.");
+            }
+            else if (chosenActionFirstPlayer == PlayerActions.MakeMove)
+            {
+                continue;
+            }
 
             cardsOnTable.Clear();
+            ClearedСardsOnTable?.Invoke();
 
             TryDetermineGameResult();
 
@@ -76,22 +96,38 @@ public class Fool
 
             // Exchange of roles, now the one who made the move beat сards.
             (firstPlayer, secondPlayer) = (secondPlayer, firstPlayer);
+            ChangedFirstPlayer?.Invoke(firstPlayer);
+
+            await Task.Delay(400);
         }
 
         return (GameResults)gameResult;
 
 
-        void FirstPlayerMove()
+        async Task PerformActionWithCard(Player player, PlayerActions action)
         {
-            //Task<Card> awaitedResult = firstPlayer.AsyncWaitCardChoice();
-            //Card cardToMakeMove = awaitedResult.Result;
-            return;
-            //firstPlayer.MakeMove(cardToMakeMove);
+            Card cardToAction = await player.AsyncWaitChoiceCard();
 
-            //cardsOnTable.Add(cardToMakeMove);
+            if (action == PlayerActions.MakeMove)
+            {
+                player.MakeMove(cardToAction);
+            }
+            else if (action == PlayerActions.BeatCard)
+            {
+                player.BeatCard(cardToAction);
+            }
+            else
+            {
+                throw new InvalidOperationException("Incorrect action in this context.");
+            }
+
+            cardsOnTable.Add(cardToAction);
+            AddingСardsOnTable?.Invoke(cardToAction, action);
+
+            await Task.Delay(500);
         }
 
-        // Determines the result of the game if the deck is empty. 
+        // Determines the result of the game if the deck is empty.
         void TryDetermineGameResult()
         {
             if (_deck.Count > 0)
@@ -112,15 +148,6 @@ public class Fool
                 gameResult = GameResults.WinnerPlayer2;
             }
         }
-
-        void ReplenishCardsPlayer(Player player)
-        {
-            if ((player.CardsCount > 0) && (player.CardsCount < Player.MaxCardsCount))
-            {
-                player.TakeСardsFromDeck(_deck, Player.MaxCardsCount - player.CardsCount);
-            }
-        }
-
     }
 
     /// <returns> The player make move first. </returns>
@@ -130,14 +157,13 @@ public class Fool
 
         if (firstPlayer is not null)
         {
-            IdentifiedFirstPlayer?.Invoke(firstPlayer);
+            ChangedFirstPlayer?.Invoke(firstPlayer);
 
             return firstPlayer;
         }
 
         firstPlayer = ComparePlayersAllCards();
-
-        IdentifiedFirstPlayer?.Invoke(firstPlayer);
+        ChangedFirstPlayer?.Invoke(firstPlayer);
 
         return firstPlayer;
 
@@ -184,6 +210,14 @@ public class Fool
             }
 
             return new Random().Next(2) == 0 ? _player1 : _player2;
+        }
+    }
+
+    private void ReplenishCardsPlayer(Player player)
+    {
+        if ((player.CardsCount > 0) && (player.CardsCount < Player.DefaultCardsCount))
+        {
+            player.TakeСardsFromDeck(_deck, Player.DefaultCardsCount - player.CardsCount);
         }
     }
 }
