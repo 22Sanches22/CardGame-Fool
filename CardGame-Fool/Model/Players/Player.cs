@@ -77,25 +77,25 @@ public abstract class Player
 
     public void MakeMove(Card card)
     {
-        if (!_cards.Contains(card))
-        {
-            throw new ArgumentException("The requested card is not in the player's hand.");
-        }
-
-        _cards.Remove(card);
+        RemoveCard(card);
 
         MakeMoved?.Invoke(this, card);
     }
 
     public void BeatCard(Card card)
     {
+        RemoveCard(card);
+
+        BeatedCard?.Invoke(this, card);
+    }
+
+    private void RemoveCard(Card card)
+    {
         if (!_cards.Contains(card))
         {
-            throw new ArgumentException("The requested card is not in the player's hand.");
+            throw new ArgumentException("The requested card is not in the player's hands.");
         }
 
         _cards.Remove(card);
-
-        BeatedCard?.Invoke(this, card);
     }
 }

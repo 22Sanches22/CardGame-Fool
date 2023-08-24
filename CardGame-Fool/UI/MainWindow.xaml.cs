@@ -8,7 +8,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-
 using CardGameFool.Model;
 using CardGameFool.Model.Cards;
 using CardGameFool.Model.Players;
@@ -27,9 +26,6 @@ public partial class MainWindow : Window
     private readonly Fool gameFool;
 
     private readonly Dictionary<Player, PlayerCards> _playersPositions = new();
-    private readonly Dictionary<Button, PlayerActions> _livePlayerActionsButtons = new();
-
-    private readonly Dictionary<Button, string> _choiceButtonText = new();
 
     private bool _isGameStarted = false;
 
@@ -48,18 +44,10 @@ public partial class MainWindow : Window
         _playersPositions.Add(livePlayer, BottomPositionPlayerCards);
         _playersPositions.Add(botPlayer, TopPositionPlayerCards);
 
-        _livePlayerActionsButtons.Add(MakeMoveButton, PlayerActions.MakeMove);
-        _livePlayerActionsButtons.Add(DiscardCardsButton, PlayerActions.DiscardCards);
-        _livePlayerActionsButtons.Add(BeatCardButton, PlayerActions.BeatCard);
-        _livePlayerActionsButtons.Add(TakeCardButton, PlayerActions.TakeCard);
-
-        _choiceButtonText.Add(MakeMoveButton, "Make move");
-        _choiceButtonText.Add(DiscardCardsButton, "Discard cards");
-        _choiceButtonText.Add(BeatCardButton, "Beat card");
-        _choiceButtonText.Add(TakeCardButton, "Take card");
-
         BottomPositionPlayerCards.CardsMouseDown += BottomPositionCards_MouseDown;
     }
+
+    public static RoutedCommand ChoiceAction { get; } = new(nameof(ChoiceAction), typeof(MainWindow));
 
     private void SubscribeGeneralPlayersEvents(Player player)
     {
@@ -150,22 +138,20 @@ public partial class MainWindow : Window
         livePlayer.SetChosenCard(((CardUI)sender).Card);
     }
 
-    private void ChoosingAction_Click(object sender, RoutedEventArgs e)
+    private void ChoiceAction_Executed(object sender, ExecutedRoutedEventArgs e)
     {
-        livePlayer.SetChosenAction(_livePlayerActionsButtons[(Button)sender]);
+        PlayerActions action = Enum.Parse<PlayerActions>((string)e.Parameter);
+        livePlayer.SetChosenAction(action);
     }
 
     private void ChoiceButton_MouseEnter(object sender, MouseEventArgs e)
     {
-        ChoiceButtonToolTipBorder.BorderBrush = (SolidColorBrush?)new BrushConverter().ConvertFrom("#d43256");
-        ChoiceButtonToolTipText.Foreground = (SolidColorBrush?)new BrushConverter().ConvertFrom("#fe9593");
-        ChoiceButtonToolTipText.Text = $"{_choiceButtonText[(Button)sender]}";
+        object buttonTag = ((Button)sender).Tag;
+        ChoiceButtonsTooltip.ChangeValue((string)buttonTag, true);
     }
 
     private void ChoiceButton_MouseLeave(object sender, MouseEventArgs e)
     {
-        ChoiceButtonToolTipBorder.BorderBrush = (SolidColorBrush?)new BrushConverter().ConvertFrom("#FF611627");
-        ChoiceButtonToolTipText.Foreground = (SolidColorBrush?)new BrushConverter().ConvertFrom("#FF734444");
-        ChoiceButtonToolTipText.Text = "...";
+        ChoiceButtonsTooltip.ChangeValue("...", false);
     }
 }

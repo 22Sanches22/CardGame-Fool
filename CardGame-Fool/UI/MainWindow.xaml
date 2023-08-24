@@ -25,7 +25,9 @@
                           Offset="0.55"/>
         </LinearGradientBrush>
     </Window.Background>
-
+    <Window.CommandBindings>
+        <CommandBinding Command="local:MainWindow.ChoiceAction" Executed="ChoiceAction_Executed"/>
+    </Window.CommandBindings>
     <Canvas x:Name="WorkspaceCanvas"
             Width="850"
             Height="500">
@@ -75,36 +77,29 @@
             </Canvas>
         </Button>
 
-        <Border x:Name="ChoiceButtonToolTipBorder"
-                Canvas.Left="640"
-                Canvas.Top="378"
-                Width="205"
-                Height="20"
-                BorderThickness="2"
-                BorderBrush="#FF611627">
-            <TextBlock x:Name="ChoiceButtonToolTipText" Text="..."
-                       TextAlignment="Center"
-                       FontSize="15"
-                       FontFamily="Bahnschrift SemiLight SemiCondensed"
-                       Foreground="#FF734444"
-                       VerticalAlignment="Center"
-                       Padding="0,2,0,0"/>
-        </Border>
-
+        <local:Tooltip x:Name="ChoiceButtonsTooltip"
+                       Canvas.Left="640"
+                       Canvas.Top="378"/>
+        
         <Button x:Name="MakeMoveButton"
                 Canvas.Left="640"
                 Canvas.Top="400"
                 Content="👣"
                 IsEnabled="False"
-                Click="ChoosingAction_Click"
+                Command="local:MainWindow.ChoiceAction"
+                CommandParameter="MakeMove"
+                Tag="Make move"
                 MouseEnter="ChoiceButton_MouseEnter"
-                MouseLeave="ChoiceButton_MouseLeave"/>
+                MouseLeave="ChoiceButton_MouseLeave">
+        </Button>
         <Button x:Name="DiscardCardsButton"
                 Canvas.Left="745"
                 Canvas.Top="400"
                 Content="🙌"
                 IsEnabled="False"
-                Click="ChoosingAction_Click"
+                Command="local:MainWindow.ChoiceAction"
+                CommandParameter="DiscardCards"
+                Tag="Discard cards"
                 MouseEnter="ChoiceButton_MouseEnter"
                 MouseLeave="ChoiceButton_MouseLeave"/>
         <Button x:Name="BeatCardButton"
@@ -113,7 +108,9 @@
                 Content="👊"
                 Padding="0,-3.5,0,0"
                 IsEnabled="False"
-                Click="ChoosingAction_Click"      
+                Command="local:MainWindow.ChoiceAction"
+                CommandParameter="BeatCard"
+                Tag="Beat card"
                 MouseEnter="ChoiceButton_MouseEnter"
                 MouseLeave="ChoiceButton_MouseLeave"/>
         <Button x:Name="TakeCardButton"
@@ -122,7 +119,9 @@
                 Content="🖐"
                 Padding="0,2,0,0"
                 IsEnabled="False"
-                Click="ChoosingAction_Click"
+                Command="local:MainWindow.ChoiceAction"
+                CommandParameter="TakeCard"
+                Tag="Take card"
                 MouseEnter="ChoiceButton_MouseEnter"
                 MouseLeave="ChoiceButton_MouseLeave"/>
 
@@ -167,5 +166,10 @@
                 </LinearGradientBrush>
             </Border.Background>
         </Border>
+        <Rectangle Canvas.Left="740"
+                   Canvas.Top="445"
+                   Width="5"
+                   Height="5"
+                   Fill="#fe9593"/>
     </Canvas>
 </Window>

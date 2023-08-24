@@ -11,6 +11,8 @@ public class LivePlayer : Player
     private Card? _chosenCard = null;
     private PlayerActions? _chosenAction = null;
 
+    private bool _isWaitingCard = false;
+
     public LivePlayer(string name) : base(name)
     { }
 
@@ -18,41 +20,55 @@ public class LivePlayer : Player
 
     public override async Task<Card> AsyncWaitChoiceCard()
     {
-        while (_chosenCard is null)
-        {
-            await Task.Delay(1);
-        }
+        _isWaitingCard = true;
+        await AsyncWait(() => _chosenCard is null);
+        _isWaitingCard = false;
 
-        Card returnedValue = (Card)_chosenCard;
-        _chosenCard = null;
-
-        return returnedValue;
-    }
-
-    public void SetChosenCard(Card card)
-    {
-        _chosenCard = card;
+        return Nullifies(ref _chosenCard);
     }
 
     public override async Task<PlayerActions> AsyncWaitActionСhoice(PlayerActions[] allowedActions)
     {
         WaitingActionChoiceHandler?.Invoke(true);
-
-        while (_chosenAction is null || !allowedActions.Contains((PlayerActions)_chosenAction)) 
-        {
-            await Task.Delay(1);
-        }
-
-        PlayerActions returnedValue = (PlayerActions)_chosenAction;
-        _chosenAction = null;
-
+        await AsyncWait(() => _chosenAction is null || !allowedActions.Contains((PlayerActions)_chosenAction));
         WaitingActionChoiceHandler?.Invoke(false);
 
-        return returnedValue;
+        return Nullifies(ref _chosenAction);
+    }
+
+    public void SetChosenCard(Card card)
+    {
+        if (_isWaitingCard)
+        {
+            _chosenCard = card;
+        }
     }
 
     public void SetChosenAction(PlayerActions action)
     {
         _chosenAction = action;
+    }
+
+    private static async Task AsyncWait(Func<bool> condition)
+    {
+        while (condition())
+        {
+            await Task.Delay(1);
+        }
+    }
+
+    /// <summary> Value type variable nulling. </summary>
+    /// <returns> The value that was stored before nulling. </returns>
+    private static T Nullifies<T>(ref T? variable) where T : struct
+    {
+        if (variable is null)
+        {
+            throw new ArgumentNullException("The nullifies object must have a non-null value.");
+        }
+
+        T returnedValue = (T)variable;
+        variable = null;
+
+        return returnedValue;
     }
 }
