@@ -31,5 +31,20 @@
                       Canvas.Left="15"
                       Rotate="-90"
                       Side="Shirt"/>
+
+        <TextBlock x:Name="CountTextBlock"
+                   Canvas.Top="69"
+                   Width="110"
+                   TextAlignment="Center"
+                   Text="36"
+                   FontSize="36"
+                   Foreground="#fcdf87">
+            <TextBlock.Effect>
+                <DropShadowEffect Color="#f68741"
+                                  Direction="0"
+                                  ShadowDepth="0"
+                                  BlurRadius="10"/>
+            </TextBlock.Effect>
+        </TextBlock>
     </Canvas>
 </UserControl>

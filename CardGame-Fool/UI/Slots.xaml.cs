@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CardGameFool.Model.Players;
+using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -10,7 +11,7 @@ namespace CardGameFool.UI;
 /// </summary>
 public partial class Slots : UserControl
 {
-    private const int _slotCount = 6;
+    private const int _slotCount = Player.StartingCardsCount;
 
     private static readonly int[] _leftSlotsPosition = { 0, 100, 200, 300, 400, 500 };
 

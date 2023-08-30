@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Threading;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using CardGameFool.Model;
 using CardGameFool.Model.Cards;
+using CardGameFool.Model.Game;
 using CardGameFool.Model.Players;
 
 namespace CardGameFool.UI;
@@ -19,11 +19,12 @@ namespace CardGameFool.UI;
 /// </summary>
 public partial class MainWindow : Window
 {
-    private readonly LivePlayer livePlayer = new("Live player");
-    private readonly BotPlayer botPlayer = new("Bot player");
+    private readonly LivePlayer _livePlayer = new("Live player");
+    private readonly BotPlayer _botPlayer = new("Bot player");
 
-    private readonly Deck deck = new();
-    private readonly Fool gameFool;
+    private readonly Deck _deck = new();
+    private readonly CardsTable _cardsTable = new();
+    private readonly Fool _gameFool;
 
     private readonly Dictionary<Player, PlayerCards> _playersPositions = new();
 
@@ -32,22 +33,26 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-        
-        SubscribeGeneralPlayersEvents(livePlayer);
-        livePlayer.WaitingActionChoiceHandler += LivePlayer_HandleWaitingActionChoice;
 
-        SubscribeGeneralPlayersEvents(botPlayer);
+        SubscribeGeneralPlayersEvents(_livePlayer);
+        _livePlayer.StartWaitActionChoice += (actions) => SetEnableStatusToChoiceActionButtons(true, actions);
+        _livePlayer.EndWaitActionChoice += () => SetEnableStatusToChoiceActionButtons(false);
 
-        gameFool = new Fool(livePlayer, botPlayer, deck);
-        SubscribeFoolEvents();
+        SubscribeGeneralPlayersEvents(_botPlayer);
 
-        _playersPositions.Add(livePlayer, BottomPositionPlayerCards);
-        _playersPositions.Add(botPlayer, TopPositionPlayerCards);
+        _deck.GetedTopCard += () => CardsDeck.Count--;
+
+        _cardsTable.Cleared += CardsSlots.Clear;
+        _cardsTable.AddingСard += Fool_PutСardInSlot;
+
+        _gameFool = new Fool(_livePlayer, _botPlayer, _deck, _cardsTable);
+        _gameFool.ChangeActivePlayer += Fool_ChangeActivePlayer;
+
+        _playersPositions.Add(_livePlayer, BottomPositionPlayerCards);
+        _playersPositions.Add(_botPlayer, TopPositionPlayerCards);
 
         BottomPositionPlayerCards.CardsMouseDown += BottomPositionCards_MouseDown;
     }
-
-    public static RoutedCommand ChoiceAction { get; } = new(nameof(ChoiceAction), typeof(MainWindow));
 
     private void SubscribeGeneralPlayersEvents(Player player)
     {
@@ -56,19 +61,20 @@ public partial class MainWindow : Window
         player.BeatedCard += Player_UsePlayerCard;
     }
 
-    private void SubscribeFoolEvents()
-    {
-        gameFool.ChangedFirstPlayer += Fool_ChangeActivePlayer;
-        gameFool.ClearedСardsOnTable += CardsSlots.Clear;
-        gameFool.AddingСardsOnTable += Fool_PutСardInSlot;
-    }
-
     private async void StartGame()
     {
-        CardsDeck.Trump = new CardUI(deck.TrumpCard);
+        CardsDeck.Trump = new CardUI(_deck.TrumpCard);
 
-        var result = await gameFool.AsyncStartGame();
-        MessageBox.Show(result.ToString());
+        //try
+        {
+            Results result = await _gameFool.AsyncStartGame();
+            MessageBox.Show(result.ToString());
+        }
+        //catch (Exception ex)
+        {
+            //MessageBox.Show(ex.Message + '\n' + ex.StackTrace);
+        }
+        
     }
 
     private void Player_TakedCards(Player player, IEnumerable<Card> addedCards)
@@ -78,8 +84,7 @@ public partial class MainWindow : Window
             _playersPositions[player].Add(new CardUI(card));
         }
 
-        int slideIndex = _playersPositions[player].Count / Player.DefaultCardsCount - 1;
-        _playersPositions[player].ShowCards(slideIndex);
+        _playersPositions[player].ShowCards();
     }
 
     private void Player_UsePlayerCard(Player player, Card card)
@@ -87,12 +92,15 @@ public partial class MainWindow : Window
         _playersPositions[player].Remove(card);
     }
 
-    private void LivePlayer_HandleWaitingActionChoice(bool isStartHandling)
+    private void SetEnableStatusToChoiceActionButtons(bool isEnabled, ICollection<PlayerActions>? actions = null)
     {
-        MakeMoveButton.IsEnabled = isStartHandling;
-        DiscardCardsButton.IsEnabled = isStartHandling;
-        BeatCardButton.IsEnabled = isStartHandling;
-        TakeCardButton.IsEnabled = isStartHandling;
+        foreach (UIElement item in PlayersActions.Users)
+        {
+            if (actions is null || actions.Contains(PlayersActions.GetAction(item)))
+            {
+                item.IsEnabled = isEnabled;
+            }
+        }
     }
 
     private void Fool_ChangeActivePlayer(Player player)
@@ -135,22 +143,22 @@ public partial class MainWindow : Window
 
     private void BottomPositionCards_MouseDown(object sender, MouseButtonEventArgs e)
     {
-        livePlayer.SetChosenCard(((CardUI)sender).Card);
+        _livePlayer.SetChosenCard(((CardUI)sender).Card);
     }
 
-    private void ChoiceAction_Executed(object sender, ExecutedRoutedEventArgs e)
+    private void ChoiceActionButton_Click(object sender, RoutedEventArgs e)
     {
-        PlayerActions action = Enum.Parse<PlayerActions>((string)e.Parameter);
-        livePlayer.SetChosenAction(action);
+        PlayerActions action = PlayersActions.GetAction((Button)sender);
+        _livePlayer.SetChosenAction(action);
     }
 
-    private void ChoiceButton_MouseEnter(object sender, MouseEventArgs e)
+    private void ChoiceActionButton_MouseEnter(object sender, MouseEventArgs e)
     {
-        object buttonTag = ((Button)sender).Tag;
-        ChoiceButtonsTooltip.ChangeValue((string)buttonTag, true);
+        PlayerActions action = PlayersActions.GetAction((Button)sender);
+        ChoiceButtonsTooltip.ChangeValue(PlayersActions.ToNormalizeString(action), true);
     }
 
-    private void ChoiceButton_MouseLeave(object sender, MouseEventArgs e)
+    private void ChoiceActionButton_MouseLeave(object sender, MouseEventArgs e)
     {
         ChoiceButtonsTooltip.ChangeValue("...", false);
     }

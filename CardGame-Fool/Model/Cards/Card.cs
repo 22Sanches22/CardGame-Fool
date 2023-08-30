@@ -21,7 +21,7 @@ public readonly struct Card : IComparable
     public readonly int Importance { get; }
 
     public int CompareTo(object? obj)
-    {     
+    {
         if (obj is null)
         {
             return -1;

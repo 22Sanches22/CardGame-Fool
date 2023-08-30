@@ -10,9 +10,9 @@ namespace CardGameFool.Model.Players;
 public abstract class Player
 {
     /// <summary> The maximum count of cards in a player's hands. </summary>
-    public const int DefaultCardsCount = 6;
+    public const int StartingCardsCount = 6;
 
-    protected readonly List<Card> _cards = new(DefaultCardsCount);
+    protected readonly List<Card> _cards = new(StartingCardsCount);
 
     public Player(string name)
     {
@@ -40,7 +40,7 @@ public abstract class Player
 
     public void TakeСardsFromDeck(Deck deck, int cardsCount)
     {
-        if (cardsCount < 0 || cardsCount > DefaultCardsCount)
+        if (cardsCount < 0 || cardsCount > StartingCardsCount)
         {
             throw new InvalidOperationException("The number of cards requested is less than zero " +
                 "or greater than the maximum allowed.");
@@ -68,24 +68,21 @@ public abstract class Player
     public void TakeCards(IEnumerable<Card> cards)
     {
         _cards.AddRange(cards);
-
         TakedCards?.Invoke(this, cards);
     }
 
-    public abstract Task<Card> AsyncWaitChoiceCard();
-    public abstract Task<PlayerActions> AsyncWaitActionСhoice(PlayerActions[] allowedActions);
+    public abstract Task<Card> AsyncWaitCardChoice();
+    public abstract Task<PlayerActions> AsyncWaitActionСhoice(IList<PlayerActions> allowedActions);
 
     public void MakeMove(Card card)
     {
         RemoveCard(card);
-
         MakeMoved?.Invoke(this, card);
     }
 
     public void BeatCard(Card card)
     {
         RemoveCard(card);
-
         BeatedCard?.Invoke(this, card);
     }
 

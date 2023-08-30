@@ -25,9 +25,6 @@
                           Offset="0.55"/>
         </LinearGradientBrush>
     </Window.Background>
-    <Window.CommandBindings>
-        <CommandBinding Command="local:MainWindow.ChoiceAction" Executed="ChoiceAction_Executed"/>
-    </Window.CommandBindings>
     <Canvas x:Name="WorkspaceCanvas"
             Width="850"
             Height="500">
@@ -53,7 +50,6 @@
         <local:Slots x:Name="CardsSlots"
                      Canvas.Left="194"
                      Canvas.Top="176"/>
-
         <Button Canvas.Left="815"
                 Canvas.Top="5"
                 Width="30"
@@ -80,50 +76,41 @@
         <local:Tooltip x:Name="ChoiceButtonsTooltip"
                        Canvas.Left="640"
                        Canvas.Top="378"/>
-        
-        <Button x:Name="MakeMoveButton"
-                Canvas.Left="640"
+
+        <Button Canvas.Left="640"
                 Canvas.Top="400"
+                local:PlayersActions.Action="MakeMove"
                 Content="👣"
                 IsEnabled="False"
-                Command="local:MainWindow.ChoiceAction"
-                CommandParameter="MakeMove"
-                Tag="Make move"
-                MouseEnter="ChoiceButton_MouseEnter"
-                MouseLeave="ChoiceButton_MouseLeave">
-        </Button>
-        <Button x:Name="DiscardCardsButton"
-                Canvas.Left="745"
+                Click="ChoiceActionButton_Click"
+                MouseEnter="ChoiceActionButton_MouseEnter"
+                MouseLeave="ChoiceActionButton_MouseLeave"/>
+        <Button Canvas.Left="745"
                 Canvas.Top="400"
+                local:PlayersActions.Action="DiscardCards"
                 Content="🙌"
                 IsEnabled="False"
-                Command="local:MainWindow.ChoiceAction"
-                CommandParameter="DiscardCards"
-                Tag="Discard cards"
-                MouseEnter="ChoiceButton_MouseEnter"
-                MouseLeave="ChoiceButton_MouseLeave"/>
-        <Button x:Name="BeatCardButton"
-                Canvas.Left="640"
+                Click="ChoiceActionButton_Click"
+                MouseEnter="ChoiceActionButton_MouseEnter"
+                MouseLeave="ChoiceActionButton_MouseLeave"/>
+        <Button Canvas.Left="640"
                 Canvas.Top="450"
+                local:PlayersActions.Action="BeatCard"
                 Content="👊"
                 Padding="0,-3.5,0,0"
                 IsEnabled="False"
-                Command="local:MainWindow.ChoiceAction"
-                CommandParameter="BeatCard"
-                Tag="Beat card"
-                MouseEnter="ChoiceButton_MouseEnter"
-                MouseLeave="ChoiceButton_MouseLeave"/>
-        <Button x:Name="TakeCardButton"
-                Canvas.Left="745"
+                Click="ChoiceActionButton_Click"
+                MouseEnter="ChoiceActionButton_MouseEnter"
+                MouseLeave="ChoiceActionButton_MouseLeave"/>
+        <Button Canvas.Left="745"
                 Canvas.Top="450"
+                local:PlayersActions.Action="TakeCard"
                 Content="🖐"
                 Padding="0,2,0,0"
                 IsEnabled="False"
-                Command="local:MainWindow.ChoiceAction"
-                CommandParameter="TakeCard"
-                Tag="Take card"
-                MouseEnter="ChoiceButton_MouseEnter"
-                MouseLeave="ChoiceButton_MouseLeave"/>
+                Click="ChoiceActionButton_Click"
+                MouseEnter="ChoiceActionButton_MouseEnter"
+                MouseLeave="ChoiceActionButton_MouseLeave"/>
 
         <Border Canvas.Left="739"
                 Canvas.Top="400"

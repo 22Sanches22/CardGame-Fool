@@ -2,70 +2,66 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows;
+
 using CardGameFool.Model.Cards;
 using CardGameFool.Model.Players;
 
-namespace CardGameFool.Model;
+namespace CardGameFool.Model.Game;
 
 /// <summary> It is a model of the card game "Fool". </summary>
 public class Fool
 {
+    public const int PlayersNumber = 2;
+
+    private static readonly PlayerActions[] _possibleActionsFirstPlayer =
+        { PlayerActions.MakeMove, PlayerActions.DiscardCards };
+    private static readonly PlayerActions[] _possibleActionsSecondPlayer =
+        { PlayerActions.BeatCard, PlayerActions.TakeCard };
+
     private readonly Player _player1;
     private readonly Player _player2;
 
     private readonly Deck _deck;
+    private readonly CardsTable _cardsTable;
 
-    public Fool(Player player1, Player player2, Deck deck)
+    public Fool(Player player1, Player player2, Deck deck, CardsTable cardsTable)
     {
         _player1 = player1;
         _player2 = player2;
 
         _deck = deck;
+        _cardsTable = cardsTable;
     }
 
-    public event Action<Player>? ChangedFirstPlayer;
-
-    public event Action<Card, PlayerActions>? AddingСardsOnTable;
-    public event Action? ClearedСardsOnTable;
+    public event Action<Player>? ChangeActivePlayer;
 
     /// <returns> Winner or draw. </returns>
-    public async Task<GameResults> AsyncStartGame()
+    public async Task<Results> AsyncStartGame()
     {
-        _player1.TakeСardsFromDeck(_deck, Player.DefaultCardsCount);
-        _player1.TakeСardsFromDeck(_deck, Player.DefaultCardsCount);
-        _player1.TakeСardsFromDeck(_deck, Player.DefaultCardsCount);
-        _player2.TakeСardsFromDeck(_deck, Player.DefaultCardsCount);
-        _player2.TakeСardsFromDeck(_deck, Player.DefaultCardsCount);
-        _player2.TakeСardsFromDeck(_deck, Player.DefaultCardsCount);
+        ReplenishCardsPlayer(_player1);
+        ReplenishCardsPlayer(_player2);
 
-        Player firstPlayer = _player1;// IdentifyFirstPlayer();
-        Player secondPlayer = (firstPlayer == _player1) ? _player2 : _player1;
+        Player firstPlayer = IdentifyFirstPlayer();
+        Player secondPlayer = firstPlayer == _player1 ? _player2 : _player1;
 
-        PlayerActions[] allowedActionsToFirstPlayer = new[] { PlayerActions.MakeMove, PlayerActions.DiscardCards };
-        PlayerActions[] allowedActionsToSecondPlayer = new[] { PlayerActions.BeatCard, PlayerActions.TakeCard };
-
-        GameResults? gameResult = null;
-
-        List<Card> cardsOnTable = new(Player.DefaultCardsCount * 2);
+        Results? gameResult = null;
 
         while (gameResult is null)
         {
             await PerformActionWithCard(firstPlayer, PlayerActions.MakeMove);
 
-            PlayerActions chosenActionSecondPlayer =
-                await secondPlayer.AsyncWaitActionСhoice(allowedActionsToSecondPlayer);
+            PlayerActions chosenActionSecondPlayer = await GetChosenAction(secondPlayer, _possibleActionsSecondPlayer);
 
-            if (!allowedActionsToSecondPlayer.Contains(chosenActionSecondPlayer))
+            if (!_possibleActionsSecondPlayer.Contains(chosenActionSecondPlayer))
             {
                 throw new InvalidOperationException("Incorrect action in this context.");
             }
             else if (chosenActionSecondPlayer == PlayerActions.TakeCard)
             {
-                secondPlayer.TakeCards(cardsOnTable);
+                secondPlayer.TakeCards(_cardsTable.Cards);
+                _cardsTable.Clear();
 
-                cardsOnTable.Clear();
-                ClearedСardsOnTable?.Invoke();
+                ReplenishCardsPlayer(firstPlayer);
 
                 TryDetermineGameResult();
 
@@ -74,39 +70,40 @@ public class Fool
 
             await PerformActionWithCard(secondPlayer, PlayerActions.BeatCard);
 
-            PlayerActions chosenActionFirstPlayer =
-                await firstPlayer.AsyncWaitActionСhoice(allowedActionsToFirstPlayer);
+            PlayerActions chosenActionFirstPlayer = await GetChosenAction(firstPlayer, _possibleActionsFirstPlayer);
 
-            if (!allowedActionsToFirstPlayer.Contains(chosenActionFirstPlayer))
+            if (!_possibleActionsFirstPlayer.Contains(chosenActionFirstPlayer))
             {
                 throw new InvalidOperationException("Incorrect action in this context.");
             }
             else if (chosenActionFirstPlayer == PlayerActions.MakeMove)
             {
+                TryDetermineGameResult();
+
                 continue;
             }
 
-            cardsOnTable.Clear();
-            ClearedСardsOnTable?.Invoke();
-
-            TryDetermineGameResult();
+            _cardsTable.Clear();
 
             ReplenishCardsPlayer(firstPlayer);
             ReplenishCardsPlayer(secondPlayer);
 
-            // Exchange of roles, now the one who made the move beat сards.
+            TryDetermineGameResult();
+
+            // Exchange of roles, now the one who maked move, beat сards.
             (firstPlayer, secondPlayer) = (secondPlayer, firstPlayer);
-            ChangedFirstPlayer?.Invoke(firstPlayer);
 
             await Task.Delay(400);
         }
 
-        return (GameResults)gameResult;
+        return (Results)gameResult;
 
 
         async Task PerformActionWithCard(Player player, PlayerActions action)
         {
-            Card cardToAction = await player.AsyncWaitChoiceCard();
+            ChangeActivePlayer?.Invoke(player);
+
+            Card cardToAction = await player.AsyncWaitCardChoice();
 
             if (action == PlayerActions.MakeMove)
             {
@@ -121,8 +118,7 @@ public class Fool
                 throw new InvalidOperationException("Incorrect action in this context.");
             }
 
-            cardsOnTable.Add(cardToAction);
-            AddingСardsOnTable?.Invoke(cardToAction, action);
+            _cardsTable.AddCard(cardToAction, action);
 
             await Task.Delay(500);
         }
@@ -135,17 +131,17 @@ public class Fool
                 return;
             }
 
-            if ((_player1.CardsCount + _player2.CardsCount) == 0)
+            if (_player1.CardsCount + _player2.CardsCount == 0)
             {
-                gameResult = GameResults.Draw;
+                gameResult = Results.Draw;
             }
             else if (_player1.CardsCount == 0)
             {
-                gameResult = GameResults.WinnerPlayer1;
+                gameResult = Results.WinnerPlayer1;
             }
             else if (_player2.CardsCount == 0)
             {
-                gameResult = GameResults.WinnerPlayer2;
+                gameResult = Results.WinnerPlayer2;
             }
         }
     }
@@ -157,13 +153,13 @@ public class Fool
 
         if (firstPlayer is not null)
         {
-            ChangedFirstPlayer?.Invoke(firstPlayer);
+            ChangeActivePlayer?.Invoke(firstPlayer);
 
             return firstPlayer;
         }
 
         firstPlayer = ComparePlayersAllCards();
-        ChangedFirstPlayer?.Invoke(firstPlayer);
+        ChangeActivePlayer?.Invoke(firstPlayer);
 
         return firstPlayer;
 
@@ -174,7 +170,7 @@ public class Fool
             Card[] trumps1 = _player1.GetTrumpCards();
             Card[] trumps2 = _player2.GetTrumpCards();
 
-            if ((trumps1.Length + trumps2.Length) > 0)
+            if (trumps1.Length + trumps2.Length > 0)
             {
                 if (trumps1.Length == 0)
                 {
@@ -213,11 +209,22 @@ public class Fool
         }
     }
 
+    private async Task<PlayerActions> GetChosenAction(Player player, IEnumerable<PlayerActions> possibleActions)
+    {
+        PlayerActions[] allowedActionsFirstPlayer = possibleActions
+            .Where(action => PlayerActionsValidator.IsValidAction(action, player.Cards))
+            .ToArray();
+
+        ChangeActivePlayer?.Invoke(player);
+
+        return await player.AsyncWaitActionСhoice(allowedActionsFirstPlayer);
+    }
+
     private void ReplenishCardsPlayer(Player player)
     {
-        if ((player.CardsCount > 0) && (player.CardsCount < Player.DefaultCardsCount))
+        if (player.CardsCount < Player.StartingCardsCount && _deck.Count > 0)
         {
-            player.TakeСardsFromDeck(_deck, Player.DefaultCardsCount - player.CardsCount);
+            player.TakeСardsFromDeck(_deck, Player.StartingCardsCount - player.CardsCount);
         }
     }
 }

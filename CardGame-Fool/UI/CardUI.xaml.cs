@@ -60,6 +60,11 @@ public partial class CardUI : UserControl, IComparable
         set
         {
             Resources["SuitText"] = SuitSymbols[value];
+
+            Resources["SuitRectangleColor"] = value == Suits.Diamonds
+                || value == Suits.Hearts
+                ? (Color)Resources["PinkColor"]
+                : (Color)Resources["BlueColor"];
         }
     }
 
@@ -110,7 +115,7 @@ public partial class CardUI : UserControl, IComparable
 
         int heightIncrease = (int)Width / 2;
 
-        Color color = (Color)ColorConverter.ConvertFromString("#10133a");//#10133a //#fcdf87 //#fecc50 //#320938
+        Color color = (Color)ColorConverter.ConvertFromString("#10133a"); //#10133a //#fcdf87 //#fecc50 //#320938
         Brush stroke = new SolidColorBrush(color);
 
         Effect effect = new DropShadowEffect()

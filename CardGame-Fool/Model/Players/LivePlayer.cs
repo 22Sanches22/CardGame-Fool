@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Linq;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using CardGameFool.Model.Cards;
@@ -16,24 +16,30 @@ public class LivePlayer : Player
     public LivePlayer(string name) : base(name)
     { }
 
-    public event Action<bool>? WaitingActionChoiceHandler;
+    public event Action<IList<PlayerActions>>? StartWaitActionChoice;
+    public event Action? EndWaitActionChoice;
 
-    public override async Task<Card> AsyncWaitChoiceCard()
+    public override async Task<Card> AsyncWaitCardChoice()
     {
         _isWaitingCard = true;
         await AsyncWait(() => _chosenCard is null);
         _isWaitingCard = false;
-
-        return Nullifies(ref _chosenCard);
+        
+        return Nulling(ref _chosenCard);
     }
 
-    public override async Task<PlayerActions> AsyncWaitActionСhoice(PlayerActions[] allowedActions)
+    public override async Task<PlayerActions> AsyncWaitActionСhoice(IList<PlayerActions> allowedActions)
     {
-        WaitingActionChoiceHandler?.Invoke(true);
-        await AsyncWait(() => _chosenAction is null || !allowedActions.Contains((PlayerActions)_chosenAction));
-        WaitingActionChoiceHandler?.Invoke(false);
+        StartWaitActionChoice?.Invoke(allowedActions);
 
-        return Nullifies(ref _chosenAction);
+        await AsyncWait(() =>
+        _chosenAction is null
+        || !allowedActions.Contains((PlayerActions)_chosenAction)
+        || !PlayerActionsValidator.IsValidAction((PlayerActions)_chosenAction, _cards));
+
+        EndWaitActionChoice?.Invoke();
+
+        return Nulling(ref _chosenAction);
     }
 
     public void SetChosenCard(Card card)
@@ -59,11 +65,11 @@ public class LivePlayer : Player
 
     /// <summary> Value type variable nulling. </summary>
     /// <returns> The value that was stored before nulling. </returns>
-    private static T Nullifies<T>(ref T? variable) where T : struct
+    private static T Nulling<T>(ref T? variable) where T : struct
     {
         if (variable is null)
         {
-            throw new ArgumentNullException("The nullifies object must have a non-null value.");
+            throw new ArgumentNullException("The nulling variable must have a non-null value.");
         }
 
         T returnedValue = (T)variable;

@@ -9,11 +9,31 @@
              Height="110"
              RenderTransformOrigin="0.5,0.5">
     <UserControl.Resources>
+        <Color x:Key="PinkColor">#FFFF3881</Color>
+        <Color x:Key="BlueColor">#FF94EEFF</Color>
+
+        <Color x:Key="SuitRectangleColor">#FF94EEFF</Color>
+
         <Color x:Key="RankForeground">#FF94EEFF</Color>
         <Color x:Key="SuitMinForeground">#fcdf87</Color>
 
         <sys:String x:Key="RankText">6</sys:String>
         <sys:String x:Key="SuitText">♠</sys:String>
+
+        <Style x:Key="SuitRectangleStyle" TargetType="Rectangle">
+            <Setter Property="Width"
+                    Value="76"/>
+            <Setter Property="Height"
+                    Value="4"/>
+            <Setter Property="Fill">
+                <Setter.Value>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                        <GradientStop Color="{DynamicResource SuitRectangleColor}"/>
+                        <GradientStop Color="Transparent" Offset="0.8"/>
+                    </LinearGradientBrush>
+                </Setter.Value>
+            </Setter>
+        </Style>
 
         <Style x:Key="RankStyle" TargetType="TextBlock">
             <Setter Property="Foreground">
@@ -62,9 +82,10 @@
         <RotateTransform x:Name="WorkspaceRotate"
                          Angle="0"/>
     </UserControl.RenderTransform>
-    
+
     <Grid>
-        <Rectangle x:Name="Border"
+        <!--Rectangle.Stroke = #FF760082-->
+        <Rectangle x:Name="Border" 
                    Panel.ZIndex="1"
                    Stroke="#FF760082"
                    StrokeThickness="2"
@@ -142,6 +163,20 @@
                 <TextBlock Style="{DynamicResource RankStyle}"/>
                 <TextBlock Style="{DynamicResource SuitMinStyle}"/>
             </StackPanel>
+
+            <Canvas>
+                <Rectangle Canvas.Left="2"
+                           Canvas.Top="2"
+                           Style="{StaticResource SuitRectangleStyle}"/>
+                <Rectangle Canvas.Left="2"
+                           Canvas.Top="104"
+                           Style="{StaticResource SuitRectangleStyle}" RenderTransformOrigin="0.5,0.5">
+                    <Rectangle.RenderTransform>
+                        <RotateTransform Angle="180"/>
+                    </Rectangle.RenderTransform>
+                </Rectangle>
+
+            </Canvas>
         </Grid>
     </Grid>
 </UserControl>

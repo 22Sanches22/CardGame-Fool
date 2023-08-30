@@ -15,7 +15,8 @@ namespace CardGameFool.UI;
 /// </summary>
 public partial class PlayerCards : UserControl
 {
-    private const int _slideCount = Deck.MaxCardsCount / Player.DefaultCardsCount;
+    private const int _cardsCountInSlide = Player.StartingCardsCount;
+    private const int _slideCount = Deck.MaxCardsCount / _cardsCountInSlide;
 
     private static readonly int[] _angles = { -65, -40, -15, 15, 40, 65 };
     private static readonly Point _transformOrigin = new(0.5, 1);
@@ -161,7 +162,7 @@ public partial class PlayerCards : UserControl
                 $"The entered slide index is less than 0 or exceeds the maximum allowable: {_slideCount}.");
         }
 
-        int startIndex = slideIndex * Player.DefaultCardsCount;
+        int startIndex = slideIndex * _slideCount;
 
         if (_cardsUI[startIndex] is null)
         {
@@ -176,7 +177,7 @@ public partial class PlayerCards : UserControl
         // The function Array.Sort() moves all the null elements forward.
         Array.Reverse(_cardsUI);
 
-        for (int i = startIndex; i < (startIndex + Player.DefaultCardsCount); i++)
+        for (int i = startIndex; i < (startIndex + _cardsCountInSlide); i++)
         {
             CardUI? cardUI = _cardsUI[i];
 
@@ -187,6 +188,12 @@ public partial class PlayerCards : UserControl
                 WorkspaceCanvas.Children.Add(cardUI);
             }   
         }
+    }
+
+    public void ShowCards()
+    {
+        int slideIndex = (int)Math.Floor(Count / _cardsCountInSlide - 1d);
+        ShowCards(slideIndex > 0 ? slideIndex - 1 : slideIndex);
     }
 
     private static int GetAngleByPosition(int cardPositionIndex)
@@ -209,12 +216,9 @@ public partial class PlayerCards : UserControl
 
     private int FindFreeIndex()
     {
-        for (int i = 0; i < _cardsUI.Length; i++)
+        if (_cardsUI.Contains(null))
         {
-            if (_cardsUI[i] is null)
-            {
-                return i;
-            }
+            return Array.IndexOf(_cardsUI, null);
         }
 
         throw new InvalidOperationException("There is no free index.");

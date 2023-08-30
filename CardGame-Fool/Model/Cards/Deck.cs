@@ -2,90 +2,93 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace CardGameFool.Model.Cards
+namespace CardGameFool.Model.Cards;
+
+public class Deck
 {
-    public class Deck
+    public const int MaxCardsCount = 36;
+
+    private const int _suitsCount = 4;
+    private const int _ranksCount = 9;
+
+    private readonly List<Card> _cards = new(MaxCardsCount);
+
+    private readonly Suits _trumpSuit;
+
+    public Deck()
     {
-        public const int MaxCardsCount = 36;
+        _trumpSuit = (Suits)new Random().Next(_suitsCount);
 
-        private const int _suitsCount = 4;
-        private const int _ranksCount = 9;
+        GenerateCards();
+        ShuffleCards();
 
-        private readonly List<Card> _cards = new(MaxCardsCount);
+        ChoiceTrump();
+    }
 
-        private readonly Suits _trumpSuit;
+    public event Action? GetedTopCard;
 
-        public Deck()
+    /// <returns> The number of card in deck. </returns>
+    public int Count => _cards.Count;
+
+    public Card TrumpCard => _cards[^1];
+
+    /// <returns> The first card to the deck and removes it. </returns>
+    public Card GetTopCard()
+    {
+        if (Count < 1)
         {
-            _trumpSuit = (Suits)new Random().Next(_suitsCount);
-
-            GenerateCards();
-            ShuffleCards();
-
-            ChoiceTrump();
+            throw new InvalidOperationException("The deck is empty.");
         }
 
-        /// <returns> The number of card in deck. </returns>
-        public int Count => _cards.Count;
+        Card topCard = _cards[0];
+        _cards.Remove(topCard);
 
-        public Card TrumpCard => _cards[^1];
+        GetedTopCard?.Invoke();
 
-        /// <returns> The first card to the deck and removes it. </returns>
-        public Card GetTopCard()
+        return topCard;
+    }
+
+    private void GenerateCards()
+    {
+        for (int i = 0; i < _suitsCount; i++)
         {
-            if (Count < 1)
+            for (int j = 0; j < _ranksCount; j++)
             {
-                throw new InvalidOperationException("The deck is empty.");
-            }
+                // The initial rank in the "Ranks" enum is six.
+                Ranks rank = j + Ranks.Six;
 
-            Card topCard = _cards[0];
-            _cards.Remove(topCard);
-
-            return topCard;
-        }
-
-        private void GenerateCards()
-        {
-            for (int i = 0; i < _suitsCount; i++)
-            {
-                for (int j = 0; j < _ranksCount; j++)
-                {
-                    // The initial rank in the "Ranks" enum is six.
-                    Ranks rank = j + Ranks.Six;
-
-                    _cards.Add(new Card(rank, (Suits)i, _trumpSuit));
-                }
+                _cards.Add(new Card(rank, (Suits)i, _trumpSuit));
             }
         }
+    }
 
-        private void ShuffleCards()
+    private void ShuffleCards()
+    {
+        Random random = new();
+
+        for (int i = 0; i < MaxCardsCount; i++)
         {
-            Random random = new();
+            int index1 = random.Next(0, MaxCardsCount);
+            int index2 = random.Next(0, MaxCardsCount);
 
-            for (int i = 0; i < MaxCardsCount; i++)
-            {
-                int index1 = random.Next(0, MaxCardsCount);
-                int index2 = random.Next(0, MaxCardsCount);
+            (_cards[index1], _cards[index2]) = (_cards[index2], _cards[index1]);
+        }
+    }
 
-                (_cards[index1], _cards[index2]) = (_cards[index2], _cards[index1]);
-            }
+    /// <summary> 
+    /// Choices a random trump card and places it at the end of the deck if the last card is not a trump card.
+    /// </summary>
+    private void ChoiceTrump()
+    {
+        if (_cards[^1].IsTrump)
+        {
+            return;
         }
 
-        /// <summary> 
-        /// Choices a random trump card and places it at the end of the deck if the last card is not a trump card.
-        /// </summary>
-        private void ChoiceTrump()
-        {
-            if (_cards[^1].IsTrump)
-            {
-                return;
-            }
+        Card[] allTrump = _cards.Where(card => card.IsTrump).ToArray();
+        Card trumpCard = allTrump[new Random().Next(allTrump.Length)];
 
-            Card[] allTrump = _cards.Where(card => card.IsTrump).ToArray();
-            Card trumpCard = allTrump[new Random().Next(allTrump.Length)];
-
-            _cards.Remove(trumpCard);
-            _cards.Add(trumpCard);
-        }
+        _cards.Remove(trumpCard);
+        _cards.Add(trumpCard);
     }
 }

@@ -51,6 +51,8 @@ public partial class DeckUI : UserControl
                 TopCard.Visibility = Visibility.Visible;
                 TrumpCard.Visibility = Visibility.Visible;
             }
+
+            CountTextBlock.Text = value > 1 ? value.ToString() : "";
         }
     }
 }
